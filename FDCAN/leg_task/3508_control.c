@@ -189,15 +189,28 @@ float Motor_SetPositionProfile(motor_control *MOTOR, MotorRun *motor,
 
 void arm_PID_INIT(void)
 {
-    // 速度环PID初始化 (4个PID实例)
+    // 云台电机 3508 (id=0, id=2): 减速比19, 惯量较大
+    // 抬升电机 2006 (id=1, id=3): 减速比36, 响应更快但扭矩较小
     for (int i = 0; i < 4; i++) {
-        arm_pid_struct_init(&pid_var[i],
-            0,        // 死区
-            8000,     // 最大输出
-            6000,     // 积分限幅
-            9,        // KP
-            0.3f,     // KI
-            0);       // KD
+        if (i == 1 || i == 3) {
+            // 抬升电机 2006: 降低输出限幅和KP (扭矩较小)
+            arm_pid_struct_init(&pid_var[i],
+                0,        // 死区
+                6000,     // 最大输出 (2006扭矩小, 降低限幅)
+                4000,     // 积分限幅
+                6,        // KP (2006惯量小, 降低比例增益)
+                0.2f,     // KI
+                0);       // KD
+        } else {
+            // 云台电机 3508: 保持原参数
+            arm_pid_struct_init(&pid_var[i],
+                0,        // 死区
+                8000,     // 最大输出
+                6000,     // 积分限幅
+                9,        // KP
+                0.3f,     // KI
+                0);       // KD
+        }
     }
 }
 
@@ -231,7 +244,7 @@ void arm_di3508_r2control_init(void)
     }
 }
 
-/* ======================== 抬升电机目标控制 ======================== */
+/* ======================== 抬升电机目标控制 (2006电机, 减速比36) ======================== */
 
 void di3508_r2control_RunTarget(motor_control *ptr, MotorRun *motor,
                                 uint8_t mode,
@@ -240,12 +253,16 @@ void di3508_r2control_RunTarget(motor_control *ptr, MotorRun *motor,
 {
     float Pidcaculatspd = 0.0f;
 
+    // 2006电机最大速度限幅 6000rpm (C610电调)
+    const float RUN_MAX_SPD = 6000.0f;
+    const float RUN_ACCEL   = 6000.0f;
+
     switch (mode)
     {
         case 1:
             Pidcaculatspd = Motor_SetPositionProfile(ptr, motor,
                 target_dic1 + 0.044f * (float)(ptr->ZERO_ecp) + 1000.0f,
-                8000, 8000, 8000, 10, 25);
+                RUN_MAX_SPD, RUN_ACCEL, RUN_ACCEL, 10, 25);
             if (Pidcaculatspd == 0)
             {
                 ptr->flag_num++;
@@ -264,7 +281,7 @@ void di3508_r2control_RunTarget(motor_control *ptr, MotorRun *motor,
         case 2:
             Pidcaculatspd = Motor_SetPositionProfile(ptr, motor,
                 target_dic2 + 0.044f * (float)(ptr->ZERO_ecp),
-                8000, 8000, 8000, 10, 25);
+                RUN_MAX_SPD, RUN_ACCEL, RUN_ACCEL, 10, 25);
             if (Pidcaculatspd == 0)
             {
                 ptr->flag_num++;
@@ -283,7 +300,7 @@ void di3508_r2control_RunTarget(motor_control *ptr, MotorRun *motor,
         case 3:
             Pidcaculatspd = Motor_SetPositionProfile(ptr, motor,
                 target_dic3 + 0.044f * (float)(ptr->ZERO_ecp),
-                8000, 8000, 8000, 10, 25);
+                RUN_MAX_SPD, RUN_ACCEL, RUN_ACCEL, 10, 25);
             if (Pidcaculatspd == 0)
             {
                 ptr->flag_num++;
@@ -302,7 +319,7 @@ void di3508_r2control_RunTarget(motor_control *ptr, MotorRun *motor,
         case 4:
             Pidcaculatspd = Motor_SetPositionProfile(ptr, motor,
                 target_dic4 + 0.044f * (float)(ptr->ZERO_ecp),
-                8000, 8000, 8000, 10, 25);
+                RUN_MAX_SPD, RUN_ACCEL, RUN_ACCEL, 10, 25);
             if (Pidcaculatspd == 0)
             {
                 ptr->flag_num++;

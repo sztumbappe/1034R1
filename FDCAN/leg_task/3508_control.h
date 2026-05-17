@@ -46,17 +46,19 @@ typedef struct {
 
 /* ======================== 机械臂位置数据 (arm_data) ======================== */
 
-/* 粉色(Red)机械臂 - 抬升电机 (id=1) */
-#define RedArmDownDic         (-1000)
-#define RedArmMiddleDic       (-360.0f*2.5f*19.0f*0.5f)
-#define RedArmPutDic          (-360.0f*2.5f*19.0f*0.7f)
-#define RedArmTopDic          (-360.0f*2.5f*19.0f)
+/* 抬升电机使用 2006 (减速比 36:1), 云台电机使用 3508 (减速比 19:1) */
 
-/* 蓝色(Blue)机械臂 - 抬升电机 (id=3) */
+/* 粉色(Red)机械臂 - 抬升电机 2006 (id=1, 减速比36) */
+#define RedArmDownDic         (-1000)
+#define RedArmMiddleDic       (-360.0f*2.5f*36.0f*0.5f)
+#define RedArmPutDic          (-360.0f*2.5f*36.0f*0.7f)
+#define RedArmTopDic          (-360.0f*2.5f*36.0f)
+
+/* 蓝色(Blue)机械臂 - 抬升电机 2006 (id=3, 减速比36) */
 #define BlueArmDownDic         (0.0f)
-#define BlueArmMiddleDic       (360.0f*2.5f*19.0f*0.5f)
-#define BlueArmPutDic          (360.0f*2.5f*19.0f*0.7f)
-#define BlueArmTopDic          (360.0f*2.5f*19.0f)
+#define BlueArmMiddleDic       (360.0f*2.5f*36.0f*0.5f)
+#define BlueArmPutDic          (360.0f*2.5f*36.0f*0.7f)
+#define BlueArmTopDic          (360.0f*2.5f*36.0f)
 
 /* 粉色机械臂 - 云台电机 (id=0, 对应0x201) */
 #define RedMiddleDic        (360.0f*19.0f*0.8f)
