@@ -9,6 +9,7 @@
 #include "3508_control.h"
 #include "bsp_fdcan.h"
 #include "ROBSTRIDE.h"
+#include "relay.h"
 #include "cmsis_os2.h"
 #include "math.h"
 

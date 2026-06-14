@@ -29,6 +29,7 @@
 #include "bsp_fdcan.h"
 #include "3508_control.h"
 #include "leg_task.h"
+#include "relay.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -105,7 +106,8 @@ int main(void)
   MX_FDCAN3_Init();
   MX_USART6_UART_Init();
   /* USER CODE BEGIN 2 */
- fdcan_config();
+  relay_test_all();   /* 继电器IO口测试 (调试用, 测试完成后注释掉) */
+  fdcan_config();
   /* USER CODE END 2 */
 
   /* Init scheduler */
