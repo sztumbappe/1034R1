@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include "bsp_fdcan.h"
 
-/* ======================== PID 结构体 (arm前缀避免与raise_task冲突) ======================== */
+/* ======================== PID 结构体 ======================== */
 
 struct arm_pid_param {
     float p, i, d;
@@ -43,36 +43,20 @@ typedef struct {
 /* ======================== 电机电流限制 ======================== */
 #define CURRUNTMAX_ARM  10000
 
+/* ======================== 2006位置定义 (相对上电位置的偏移) ======================== */
+/* 上电后手动转到目标位置，用Keil Watch读 total_ecd 填入下方值 */
 
-/* ======================== 机械臂位置数据 (arm_data) ======================== */
+/* 粉色臂 2006 (control_3508_classic[0]) */
+#define LIFT_RED_POS1       (0)             /* 位置1: 待填 */
+#define LIFT_RED_POS2       (0)             /* 位置2: 待填 */
+#define LIFT_RED_POS3       (0)             /* 位置3: 待填 */
 
-/* 抬升电机使用 2006 (减速比 36:1), 云台电机使用 3508 (减速比 19:1) */
+/* 蓝色臂 2006 (control_3508_classic[1]) */
+#define LIFT_BLUE_POS1      (0)             /* 位置1: 待填 */
+#define LIFT_BLUE_POS2      (0)             /* 位置2: 待填 */
+#define LIFT_BLUE_POS3      (0)             /* 位置3: 待填 */
 
-/* 粉色(Red)机械臂 - 抬升电机 2006 (id=1, 减速比36) */
-#define RedArmDownDic         (-1000)
-#define RedArmMiddleDic       (-360.0f*2.5f*36.0f*0.5f)
-#define RedArmPutDic          (-360.0f*2.5f*36.0f*0.7f)
-#define RedArmTopDic          (-360.0f*2.5f*36.0f)
-
-/* 蓝色(Blue)机械臂 - 抬升电机 2006 (id=3, 减速比36) */
-#define BlueArmDownDic         (0.0f)
-#define BlueArmMiddleDic       (360.0f*2.5f*36.0f*0.5f)
-#define BlueArmPutDic          (360.0f*2.5f*36.0f*0.7f)
-#define BlueArmTopDic          (360.0f*2.5f*36.0f)
-
-/* 粉色机械臂 - 云台电机 (id=0, 对应0x201) */
-#define RedMiddleDic        (360.0f*19.0f*0.8f)
-#define RedVerticalDic      (360.0f*19.0f*1.55f)
-#define RedOutsideDic       (360.0f*19.0f*1.7f)
-#define RedInsideDic        (360.0f*19.0f*0.7f)
-
-/* 蓝色机械臂 - 云台电机 (id=2, 对应0x203) */
-#define BlueMiddleDic      (-360.0f*19.0f*0.8f)
-#define BlueVerticalDic    (-360.0f*19.0f*1.6f)
-#define BlueOutsideDic     (-360.0f*19.0f*1.7f)
-#define BlueInsideDic      (-360.0f*19.0f*0.7f)
-
-/* ======================== PID函数 (arm前缀避免与raise_task冲突) ======================== */
+/* ======================== PID函数 ======================== */
 
 void arm_pid_struct_init(struct arm_pid *pid, float input_max_err, float maxout,
                          float intergral_limit, float kp, float ki, float kd);
@@ -86,42 +70,32 @@ void arm_PID_INIT(void);
 /* 等待电机通讯建立 */
 void di3508_r2control_Begin(void);
 
-/* 电机零点校准 (arm前缀避免与raise_task冲突) */
-void arm_di3508_r2control_init(void);
-
-/* 抬升电机目标控制 (mode: 1~4 对应不同目标位置) */
-void di3508_r2control_RunTarget(motor_control *ptr, MotorRun *motor,
-                                uint8_t mode,
-                                float target_dic1, float target_dic2,
-                                float target_dic3, float target_dic4);
-
-/* 云台电机目标控制 */
-void di3508_r2control_gimbal(motor_control *ptr, MotorRun *motor,
-                             uint8_t mode,
-                             float target_dic1, float target_dic2,
-                             float target_dic3, float target_dic4);
-
-/* 云台电机限位查找 (阻塞) */
-void di3508_r2control_gimbal_find(uint8_t mode);
-
-/* 云台电机非阻塞限位查找 (单次迭代，适合与其它电机同时运行) */
-void di3508_r2control_gimbal_find_nonblock(motor_control *MOTOR, float speed);
-
 /* 获取电机总位置 */
 float GetTotalPosition(motor_control *motor);
 
 /* 设置电机速度 (速度环PID) */
 void SetSpeed(motor_control *ptr, float speed);
 
-/* 电机限位查找 */
-void di3508_find_limitation(motor_control *MOTOR, float speed);
+/* 2006抬升初始化 (记录上电零点) */
+void lift_init(void);
+
+/* 2006设置目标 (idx: 0=粉色臂 1=蓝色臂, target: 编码器偏移) */
+void lift_set_target(uint8_t idx, float target);
+
+/* 2006抬升PID闭环 (主循环每周期调用, 持续保持位置) */
+void lift_goto_target(void);
+
+/* 调试变量 (Keil Watch中查看) */
+extern int32_t lift_debug_offset[2];    /* 相对上电位置的编码器偏移 */
+
+/* 2006调试偏移更新 (主循环调用) */
+void lift_update_debug(void);
 
 /* 位置梯形速度规划 */
 float Motor_SetPositionProfile(motor_control *MOTOR, MotorRun *motor,
                                float target_pos, float max_spd,
                                float accel, float decel,
                                float deadband, float dead_spd);
-
 
 /* ======================== 气缸控制 ======================== */
 

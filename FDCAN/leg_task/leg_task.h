@@ -10,10 +10,4 @@ void leg_task(void *argument);
 
 /* ======================== 内部功能函数 ======================== */
 
-/* 机械臂初始化 (多阶段) */
-void DoubleArmInit(void);
-
-/* 任务状态机 (自动运行) */
-void task(void);
-
 #endif /* __LEG_TASK_H */

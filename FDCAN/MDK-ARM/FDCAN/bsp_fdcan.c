@@ -1,5 +1,6 @@
 #include "bsp_fdcan.h"
 #include "fdcan.h"
+#include "ROBSTRIDE.h"
 
 // 电机数据接收 (与参考项目一致)
 motor_control control_3508_classic[5];
@@ -61,7 +62,7 @@ static motor_control control_3508_classic_init[5] = {
 void fdcan_config(void)
 {
 	FDCAN_FilterTypeDef FDCAN1_FilterConfig;
-	FDCAN1_FilterConfig.IdType = FDCAN_STANDARD_ID;
+	FDCAN1_FilterConfig.IdType = FDCAN_EXTENDED_ID;
 	FDCAN1_FilterConfig.FilterIndex = 0;
 	FDCAN1_FilterConfig.FilterType = FDCAN_FILTER_MASK;
 	FDCAN1_FilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
@@ -228,7 +229,16 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
 {
 	if (hfdcan == &hfdcan1)
 	{
-		// FDCAN1 回调 (如有需要可扩展)
+		// FDCAN1 回调 - 解析灵足05扩展帧反馈
+		FDCAN_RxHeaderTypeDef rx_header;
+		uint8_t rx_data_buf[8];
+		if (HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &rx_header, rx_data_buf) == HAL_OK)
+		{
+			if (rx_header.IdType == FDCAN_EXTENDED_ID)
+			{
+				Robstirde_Motor_05_process_frame(&rx_header, rx_data_buf);
+			}
+		}
 	}
 	if (hfdcan == &hfdcan3)
 	{
