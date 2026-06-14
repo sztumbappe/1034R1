@@ -41,6 +41,7 @@
 "fdcan\raise_task.o"
 "fdcan\leg_task.o"
 "fdcan\3508_control.o"
+"fdcan\robstride.o"
 --strict --scatter "FDCAN\FDCAN.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

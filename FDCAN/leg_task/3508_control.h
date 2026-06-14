@@ -47,14 +47,14 @@ typedef struct {
 /* 上电后手动转到目标位置，用Keil Watch读 total_ecd 填入下方值 */
 
 /* 粉色臂 2006 (control_3508_classic[0]) */
-#define LIFT_RED_POS1       (0)             /* 位置1: 待填 */
-#define LIFT_RED_POS2       (0)             /* 位置2: 待填 */
-#define LIFT_RED_POS3       (0)             /* 位置3: 待填 */
+#define LIFT_RED_POS1       (298515)        /* 高200 */
+#define LIFT_RED_POS2       (-442819)       /* 高400 */
+#define LIFT_RED_POS3       (-1000207)      /* 高600 */
 
 /* 蓝色臂 2006 (control_3508_classic[1]) */
-#define LIFT_BLUE_POS1      (0)             /* 位置1: 待填 */
-#define LIFT_BLUE_POS2      (0)             /* 位置2: 待填 */
-#define LIFT_BLUE_POS3      (0)             /* 位置3: 待填 */
+#define LIFT_BLUE_POS1      (298515)        /* 高200 */
+#define LIFT_BLUE_POS2      (-442819)       /* 高400 */
+#define LIFT_BLUE_POS3      (-1000207)      /* 高600 */
 
 /* ======================== PID函数 ======================== */
 

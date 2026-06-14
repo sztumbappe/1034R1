@@ -180,10 +180,10 @@ void arm_PID_INIT(void)
     for (int i = 0; i < 4; i++) {
         arm_pid_struct_init(&pid_var[i],
             0,        // 死区
-            6000,     // 最大输出
-            4000,     // 积分限幅
-            6,        // KP
-            0.2f,     // KI
+            15000,    // 最大输出（配合高速抬升）
+            8000,     // 积分限幅
+            20,       // KP
+            0.3f,     // KI
             0);       // KD
     }
 }
@@ -246,8 +246,8 @@ void lift_set_target(uint8_t idx, float target)
 
 void lift_goto_target(void)
 {
-    const float MAX_SPD = 6000.0f;
-    const float ACCEL   = 6000.0f;
+    const float MAX_SPD = 15000.0f;   // 最大速度（加快抬升）
+    const float ACCEL   = 15000.0f;   // 加速度
 
     for (int i = 0; i < 2; i++)
     {

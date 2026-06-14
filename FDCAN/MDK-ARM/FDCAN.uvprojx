@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_PWR_LDO_SUPPLY,USE_HAL_DRIVER,STM32H723xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;./FDCAN;../Middlewares/ST/ARM/DSP/Inc;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Raise_task;..\leg_task</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc;../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32H7xx/Include;../Drivers/CMSIS/Include;./FDCAN;../Middlewares/ST/ARM/DSP/Inc;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../Raise_task;..\leg_task;..\ROBSTRIDE</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1314,6 +1314,16 @@
               <FileName>3508_control.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\leg_task\3508_control.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>ROBSTRIDE</GroupName>
+          <Files>
+            <File>
+              <FileName>ROBSTRIDE.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ROBSTRIDE\ROBSTRIDE.c</FilePath>
             </File>
           </Files>
         </Group>

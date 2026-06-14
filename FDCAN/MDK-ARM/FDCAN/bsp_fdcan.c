@@ -70,26 +70,26 @@ void fdcan_config(void)
 	FDCAN1_FilterConfig.FilterID2 = 0x00000000;
 
 	HAL_FDCAN_ConfigFilter(&hfdcan1, &FDCAN1_FilterConfig);
-	HAL_FDCAN_ConfigGlobalFilter(&hfdcan1, FDCAN_REJECT, FDCAN_REJECT, FDCAN_FILTER_REMOTE, FDCAN_FILTER_REMOTE);
+	HAL_FDCAN_ConfigGlobalFilter(&hfdcan1, FDCAN_ACCEPT_IN_RX_FIFO0, FDCAN_ACCEPT_IN_RX_FIFO0, FDCAN_FILTER_REMOTE, FDCAN_FILTER_REMOTE);
 	HAL_FDCAN_ActivateNotification(&hfdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
 	HAL_FDCAN_Start(&hfdcan1);
 
 	FDCAN_FilterTypeDef FDCAN2_FilterConfig;
 	FDCAN2_FilterConfig.IdType = FDCAN_STANDARD_ID;
-	FDCAN2_FilterConfig.FilterIndex = 1;
+	FDCAN2_FilterConfig.FilterIndex = 0;
 	FDCAN2_FilterConfig.FilterType = FDCAN_FILTER_MASK;
 	FDCAN2_FilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
 	FDCAN2_FilterConfig.FilterID1 = 0x00000000;
 	FDCAN2_FilterConfig.FilterID2 = 0x00000000;
 
 	HAL_FDCAN_ConfigFilter(&hfdcan2, &FDCAN2_FilterConfig);
-	HAL_FDCAN_ConfigGlobalFilter(&hfdcan2, FDCAN_REJECT, FDCAN_REJECT, FDCAN_FILTER_REMOTE, FDCAN_FILTER_REMOTE);
+	HAL_FDCAN_ConfigGlobalFilter(&hfdcan2, FDCAN_ACCEPT_IN_RX_FIFO0, FDCAN_ACCEPT_IN_RX_FIFO0, FDCAN_FILTER_REMOTE, FDCAN_FILTER_REMOTE);
 	HAL_FDCAN_ActivateNotification(&hfdcan2, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
 	HAL_FDCAN_Start(&hfdcan2);
 
 	FDCAN_FilterTypeDef FDCAN3_FilterConfig;
 	FDCAN3_FilterConfig.IdType = FDCAN_STANDARD_ID;
-	FDCAN3_FilterConfig.FilterIndex = 1;
+	FDCAN3_FilterConfig.FilterIndex = 0;
 	FDCAN3_FilterConfig.FilterType = FDCAN_FILTER_MASK;
 	FDCAN3_FilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
 	FDCAN3_FilterConfig.FilterID1 = 0x00000000;
@@ -225,18 +225,22 @@ static void Fdcan3_rx_callback(void)
 	}
 }
 
+float a;
 void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
 {
 	if (hfdcan == &hfdcan1)
 	{
-		// FDCAN1 回调 - 解析灵足05扩展帧反馈
+		// FDCAN1 回调 - 循环读取FIFO中所有消息
 		FDCAN_RxHeaderTypeDef rx_header;
 		uint8_t rx_data_buf[8];
-		if (HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &rx_header, rx_data_buf) == HAL_OK)
+		while (HAL_FDCAN_GetRxFifoFillLevel(&hfdcan1, FDCAN_RX_FIFO0) > 0)
 		{
+			if (HAL_FDCAN_GetRxMessage(&hfdcan1, FDCAN_RX_FIFO0, &rx_header, rx_data_buf) != HAL_OK)
+				break;
 			if (rx_header.IdType == FDCAN_EXTENDED_ID)
 			{
 				Robstirde_Motor_05_process_frame(&rx_header, rx_data_buf);
+				a++;
 			}
 		}
 	}

@@ -17,12 +17,12 @@
 #define ROBSTRIDE_ID_ARM2   2       /* 蓝色臂云台 */
 
 /* 灵足05目标角度 (rad) */
-#define ROBSTRIDE_TARGET_ANGLE_1   (+1.57f)   /* 粉色臂目标 */
-#define ROBSTRIDE_TARGET_ANGLE_2   (-1.57f)   /* 蓝色臂目标 */
+#define ROBSTRIDE_TARGET_ANGLE_1   (9.42f)   /* 粉色臂目标 */
+#define ROBSTRIDE_TARGET_ANGLE_2   (0)   /* 蓝色臂目标 */
 
-/* 灵足05死区限幅 */
-#define ROBSTRIDE_ANGLE_MIN   (-3.0f * M_PI / 4.0f)
-#define ROBSTRIDE_ANGLE_MAX   ( 3.0f * M_PI / 4.0f)
+/* 灵足05活动范围 */
+#define ROBSTRIDE_ANGLE_MIN   (-0.5f)
+#define ROBSTRIDE_ANGLE_MAX   ( 3.14f)
  
  #define Set_mode 		 'j'				//设置控制模式
  #define Set_parameter 'p'				//设置参数
