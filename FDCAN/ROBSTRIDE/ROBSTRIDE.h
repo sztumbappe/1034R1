@@ -18,8 +18,9 @@
 
 /* 灵足05目标角度 (rad) */
 #define ROBSTRIDE_TARGET_ANGLE_1   (3.14f)   /* 粉色臂目标 */
-#define ROBSTRIDE_TARGET_ANGLE_2   (0)   /* 蓝色臂目标 */
-#define ROBSTRIDE_RETRACT_ANGLE   (-0.3f)  /* 收回目标 */
+#define ROBSTRIDE_TARGET_ANGLE_2   (-3.14f)  /* 蓝色臂目标 */
+#define ROBSTRIDE_RETRACT_ANGLE       (-0.3f)  /* 粉色臂收回目标 */
+#define ROBSTRIDE_RETRACT_ANGLE_BLUE  (0.3f)  /* 蓝色臂收回目标 */
 
 /* 灵足05活动范围 */
 #define ROBSTRIDE_ANGLE_MIN   (-0.5f)
@@ -133,5 +134,5 @@ void robstride_init_offset_filtered(uint8_t motor_id);
 float robstride_get_relative_angle(uint8_t motor_id);
 void RobStride_Enable_AutoReport(FDCAN_HandleTypeDef *hfdcan, uint8_t motor_id, uint8_t master_id);
 extern volatile float arm_close;
-void robstride_goto_target(float tgt);
+void robstride_goto_target(float tgt, uint8_t motor_idx);
 #endif

@@ -597,61 +597,72 @@ static inline float robstride_clampf(float x, float lo, float hi)
 float h;
 float virtual_angle[2] = {0.0f, 0.0f};
 volatile float arm_close = 0;   /* 0=正常, 1=收回 */
-void robstride_goto_target(float tgt)
+
+/*******************************************************************************
+* @功能      : 双臂灵足05平滑转到目标角度 (MIT运控模式)
+* @参数1     : tgt 目标角度 (rad)
+* @参数2     : motor_idx 电机索引 (0=粉色臂CAN ID=1, 1=蓝色臂CAN ID=2)
+* @返回值   : void
+*******************************************************************************/
+void robstride_goto_target(float tgt, uint8_t motor_idx)
 {
     /* 控制参数 */
-    const float MAX_WRIST_SPEED = 2.0f;
+    const float MAX_WRIST_SPEED = 2.5f;
     const float WRIST_ANGLE_EPS = 0.004f;
     const float STABLE_ALPHA    = 0.10f;
     const float DT              = 0.002f;
     const float Kp              = 100.0f;
     const float Kd              = 4.5f;
 
-    static float stable_target = 0.0f;
-    static uint8_t initialized = 0;
+    static float stable_target[2] = {0.0f, 0.0f};
+    static uint8_t initialized[2] = {0, 0};
+
+    /* 索引保护 */
+    if (motor_idx > 1) return;
+    uint8_t can_id = motor_idx + 1;  /* motor_idx=0→CAN ID=1(粉色臂), motor_idx=1→CAN ID=2(蓝色臂) */
 
     /* 首次初始化：从当前实际角度开始 */
-    if (!initialized)
+    if (!initialized[motor_idx])
     {
-        stable_target = Pos_Info[1].Angle;
-        virtual_angle[0] = Pos_Info[1].Angle;
-        initialized = 1;
+        stable_target[motor_idx] = Pos_Info[can_id].Angle;
+        virtual_angle[motor_idx] = Pos_Info[can_id].Angle;
+        initialized[motor_idx] = 1;
     }
 
     /* 目标平滑更新 */
-    float error_to_target = tgt - stable_target;
+    float error_to_target = tgt - stable_target[motor_idx];
     if (fabsf(error_to_target) < 0.01f)
     {
-        stable_target = tgt;
+        stable_target[motor_idx] = tgt;
     }
     else
     {
-        stable_target += STABLE_ALPHA * error_to_target;
+        stable_target[motor_idx] += STABLE_ALPHA * error_to_target;
     }
 
     /* 限速插值 */
-    float delta_total = stable_target - virtual_angle[0];
+    float delta_total = stable_target[motor_idx] - virtual_angle[motor_idx];
     float max_step = MAX_WRIST_SPEED * DT;
 
     if (fabsf(delta_total) > WRIST_ANGLE_EPS)
     {
         float step = (delta_total > 0) ? fminf(max_step, delta_total) : fmaxf(-max_step, delta_total);
-        virtual_angle[0] += step;
+        virtual_angle[motor_idx] += step;
     }
     else
     {
-        virtual_angle[0] = stable_target;
+        virtual_angle[motor_idx] = stable_target[motor_idx];
     }
 
     /* 速度前馈 */
     float dummy_speed = robstride_clampf(delta_total / DT, -MAX_WRIST_SPEED, MAX_WRIST_SPEED);
 
-    /* 发送MIT运控指令给 ID=1 */
+    /* 发送MIT运控指令 */
     RobStrite_Motor_05_move_control(&Robstirde_Motor_05_hfdcan,
                                     0.0f,
-                                    virtual_angle[0],
+                                    virtual_angle[motor_idx],
                                     dummy_speed,
                                     Kp, Kd,
-                                    1);  // CAN ID = 1
+                                    can_id);
     h++;
 }

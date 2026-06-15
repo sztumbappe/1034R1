@@ -263,12 +263,17 @@
         <Ww>
           <count>22</count>
           <WinNumber>1</WinNumber>
-          <ItemText>lift_debug_offset[1]</ItemText>
+          <ItemText>lift_debug_offset[1],0x0A</ItemText>
         </Ww>
         <Ww>
           <count>23</count>
           <WinNumber>1</WinNumber>
           <ItemText>arm_close</ItemText>
+        </Ww>
+        <Ww>
+          <count>24</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>lift_debug_offset[0],0x0A</ItemText>
         </Ww>
       </WatchWindow1>
       <Tracepoint>

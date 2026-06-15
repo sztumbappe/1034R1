@@ -3,7 +3,7 @@
 <title>Static Call Graph - [FDCAN\FDCAN.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image FDCAN\FDCAN.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6230001: Last Updated: Mon Jun 15 14:24:38 2026
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6230001: Last Updated: Mon Jun 15 17:39:55 2026
 <BR><P>
 <H3>Maximum Stack Usage =        368 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -844,7 +844,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FDCAN_AddMessageToTxFifoQ
 </UL>
-<BR>[Called By]<UL><LI><a href="#[12c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_goto_target
+<BR>[Called By]<UL><LI><a href="#[12b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_goto_target
 <LI><a href="#[97]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Raise_task
 <LI><a href="#[118]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;di3508_r2control
 <LI><a href="#[117]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;di3508_r2control_init
@@ -945,7 +945,7 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 28<LI>Call Chain = HAL_FDCAN_AddMessageToTxFifoQ
 </UL>
 <BR>[Called By]<UL><LI><a href="#[b9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CAN_CMD_RM
-<LI><a href="#[12b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_goto_target
+<LI><a href="#[12c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_goto_target
 <LI><a href="#[127]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_init
 </UL>
 
@@ -1129,7 +1129,7 @@ Global Symbols
 <LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_PWREx_ConfigSupply
 <LI><a href="#[11d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UART_WaitOnFlagUntilTimeout
 <LI><a href="#[106]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UART_CheckIdleState
-<LI><a href="#[12c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_goto_target
+<LI><a href="#[12b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_goto_target
 </UL>
 
 <P><STRONG><a name="[f9]"></a>HAL_IncTick</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, stm32h7xx_hal.o(.text.HAL_IncTick))
@@ -1566,7 +1566,7 @@ Global Symbols
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32h723xx.o(RESET)
 </UL>
 <P><STRONG><a name="[12d]"></a>SetSpeed</STRONG> (Thumb, 276 bytes, Stack size 0 bytes, 3508_control.o(.text.SetSpeed))
-<BR><BR>[Called By]<UL><LI><a href="#[12c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_goto_target
+<BR><BR>[Called By]<UL><LI><a href="#[12b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_goto_target
 </UL>
 
 <P><STRONG><a name="[9]"></a>SysTick_Handler</STRONG> (Thumb, 30 bytes, Stack size 8 bytes, cmsis_os2.o(.text.SysTick_Handler))
@@ -1691,12 +1691,12 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[ac]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[98]"></a>leg_task</STRONG> (Thumb, 308 bytes, Stack size 0 bytes, leg_task.o(.text.leg_task))
-<BR><BR>[Stack]<UL><LI>Max Depth = 132<LI>Call Chain = leg_task &rArr; lift_goto_target &rArr; CAN_CMD_RM &rArr; HAL_FDCAN_AddMessageToTxFifoQ
+<P><STRONG><a name="[98]"></a>leg_task</STRONG> (Thumb, 532 bytes, Stack size 8 bytes, leg_task.o(.text.leg_task))
+<BR><BR>[Stack]<UL><LI>Max Depth = 140<LI>Call Chain = leg_task &rArr; lift_goto_target &rArr; CAN_CMD_RM &rArr; HAL_FDCAN_AddMessageToTxFifoQ
 </UL>
 <BR>[Calls]<UL><LI><a href="#[114]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
-<LI><a href="#[12c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_goto_target
-<LI><a href="#[12b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_goto_target
+<LI><a href="#[12c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_goto_target
+<LI><a href="#[12b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_goto_target
 <LI><a href="#[12a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_set_target
 <LI><a href="#[129]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_update_debug
 <LI><a href="#[128]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_init
@@ -1705,7 +1705,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> freertos.o(.text.MX_FREERTOS_Init)
 </UL>
-<P><STRONG><a name="[12c]"></a>lift_goto_target</STRONG> (Thumb, 512 bytes, Stack size 88 bytes, 3508_control.o(.text.lift_goto_target))
+<P><STRONG><a name="[12b]"></a>lift_goto_target</STRONG> (Thumb, 512 bytes, Stack size 88 bytes, 3508_control.o(.text.lift_goto_target))
 <BR><BR>[Stack]<UL><LI>Max Depth = 132<LI>Call Chain = lift_goto_target &rArr; CAN_CMD_RM &rArr; HAL_FDCAN_AddMessageToTxFifoQ
 </UL>
 <BR>[Calls]<UL><LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
@@ -1793,8 +1793,8 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[13d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvInitialiseNewTask
 </UL>
 
-<P><STRONG><a name="[12b]"></a>robstride_goto_target</STRONG> (Thumb, 448 bytes, Stack size 56 bytes, robstride.o(.text.robstride_goto_target))
-<BR><BR>[Stack]<UL><LI>Max Depth = 84<LI>Call Chain = robstride_goto_target &rArr; HAL_FDCAN_AddMessageToTxFifoQ
+<P><STRONG><a name="[12c]"></a>robstride_goto_target</STRONG> (Thumb, 492 bytes, Stack size 64 bytes, robstride.o(.text.robstride_goto_target))
+<BR><BR>[Stack]<UL><LI>Max Depth = 92<LI>Call Chain = robstride_goto_target &rArr; HAL_FDCAN_AddMessageToTxFifoQ
 </UL>
 <BR>[Calls]<UL><LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FDCAN_AddMessageToTxFifoQ
 </UL>

@@ -41,7 +41,7 @@ typedef struct {
 } MotorRun;
 
 /* ======================== 电机电流限制 ======================== */
-#define CURRUNTMAX_ARM  10000
+#define CURRUNTMAX_ARM  12000
 
 /* ======================== 2006位置定义 (相对上电位置的偏移) ======================== */
 /* 上电后手动转到目标位置，用Keil Watch读 total_ecd 填入下方值 */
@@ -52,9 +52,9 @@ typedef struct {
 #define LIFT_RED_POS3       (-1000207)      /* 高600 */
 
 /* 蓝色臂 2006 (control_3508_classic[1]) */
-#define LIFT_BLUE_POS1      (298515)        /* 高200 */
-#define LIFT_BLUE_POS2      (-442819)       /* 高400 */
-#define LIFT_BLUE_POS3      (-1000207)      /* 高600 */
+#define LIFT_BLUE_POS1      (-158140)        /* 高200 */
+#define LIFT_BLUE_POS2      (430772)       /* 高400 */
+#define LIFT_BLUE_POS3      (1022170)      /* 高600 */
 
 /* ======================== PID函数 ======================== */
 
