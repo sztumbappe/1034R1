@@ -10,7 +10,6 @@
 #include "stdint.h"
 
 /* 电机参数定义 */
-#define CURRUNTMAX      5000
 #define AIMDIC        4562067.0f    //3508电机转29圈
 //#define AIMDIC          3146253.0f    //3508电机转20圈   
 #define AimVar          1000
@@ -26,6 +25,7 @@ extern int32_t CycleNum;
 extern uint8_t raise_init_trigger;    // 初始化触发（1=触发初始化+校准，0=无操作）
 extern uint8_t raise_init_done;       // 初始化完成标志（0=未完成，1=已完成）
 extern uint8_t raise_control_enable;  // 电机控制使能（1=使能位置控制，0=停止电机）
+extern float raise_target_pos;        // 相对零点偏移: 0=零点, AIMDIC=抬升
 
 /* 全局PID实例 */
 extern struct pid pid_var1;

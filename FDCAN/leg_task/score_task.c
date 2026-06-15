@@ -9,6 +9,7 @@
 #include "relay.h"
 #include "leg_task.h"
 #include "3508_control.h"
+#include "raise_task.h"
 #include "cmsis_os2.h"
 
 /* ======================== 外部变量 ======================== */
@@ -208,7 +209,15 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
 
     /* ---- 抬升切换 ---- */
     case RC_CMD_UPLIFT:
-        /* 暂不处理 */
+        if (cmd->param1 == 1) {
+            /* UPLIFT1: 大抬升升到顶 */
+            raise_target_pos = AIMDIC;
+            raise_control_enable = 1;
+        } else {
+            /* UPLIFT0: 大抬升降到零点(限位开关) */
+            raise_target_pos = 0;
+            raise_control_enable = 1;
+        }
         break;
 
     default:

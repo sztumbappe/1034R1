@@ -57,6 +57,7 @@ extern motor_measure_t chassis_3508_motor[8];
 uint8_t raise_init_trigger = 0;    // 初始化触发（1=触发初始化+校准，0=无操作）
 uint8_t raise_init_done = 0;       // 初始化完成标志（0=未完成，1=已完成）
 uint8_t raise_control_enable = 0;  // 电机控制使能（1=使能位置控制，0=停止电机）
+float raise_target_pos = 0;        // 相对零点偏移: 0=零点, AIMDIC=抬升
 /************************ PID核心实现 ************************/
 static void abs_limit(float *a, float ABS_MAX)
 {
@@ -212,8 +213,24 @@ void di3508_r2control_init(void)
 
 void di3508_r2control(void)
 {
+    // 限位保护: 下降时如果触发限位，立即刹车并重记零点
+    Limit_Switch_GetState();
+    if (limit_state == 1)
+    {
+        for (int i = 0; i < 5; i++)
+        {
+            Pidcur = pid_calculate1(&pid_var1, (float)chassis_3508_motor[0].speed_rpm, 0);
+            CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, (int)Pidcur, 0, 0, 0);
+            vTaskDelay(pdMS_TO_TICKS(5));
+        }
+        CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, 0, 0);
+        MOTOR_STECD = total_ecd;
+        raise_control_enable = 0;
+        return;
+    }
+
     // 电机位置闭环控制
-    Pidvar = pid_calculate1(&pid_dic, (float)total_ecd, RAISE_TARGET_POS + (float)MOTOR_STECD);
+    Pidvar = pid_calculate1(&pid_dic, (float)total_ecd, raise_target_pos + (float)MOTOR_STECD);
     Pidcur = pid_calculate1(&pid_var1, (float)chassis_3508_motor[0].speed_rpm, Pidvar);
     CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, (int)Pidcur, 0, 0, 0);
 }
@@ -231,16 +248,15 @@ void Raise_task(void *argument)
         // 读取限位开关状态
         Limit_Switch_GetState();
 
-        // 初始化流程由变量触发
-        if (raise_init_trigger == 1 && raise_init_done == 0)
+        // 上电自动初始化 (无需外部触发)
+        if (raise_init_done == 0)
         {
             PID_INIT();                          // PID参数初始化
             dj3508_r2_begin();                   // 等待电机通讯建立
             di3508_r2control_init();             // 电机零点校准（电子限位开关触发）
             osDelay(200);                        // 校准后短延时
             raise_init_done = 1;                 // 标记初始化完成
-            raise_init_trigger = 0;              // 清除触发信号
-					b++;
+            b++;
         }
 
         // 电机位置控制由变量使能
