@@ -1,117 +1,120 @@
 #include "relay.h"
+#include "cmsis_os2.h"
 
-/* ======================== 低层GPIO控制函数 ======================== */
+/* ======================== 低层GPIO控制 ======================== */
 
-void relay_cylinder1_set(uint8_t on)
+static void vacuum_set(uint8_t arm_id, uint8_t on)
 {
-    HAL_GPIO_WritePin(CYLINDER1_PORT, CYLINDER1_PIN,
-                      on ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    if (arm_id == 1) {
+        HAL_GPIO_WritePin(VACUUM1_PORT, VACUUM1_PIN,
+                          on ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    } else if (arm_id == 2) {
+        HAL_GPIO_WritePin(VACUUM2_PORT, VACUUM2_PIN,
+                          on ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    }
 }
 
-void relay_cylinder2_set(uint8_t on)
+static void cylinder_set(uint8_t arm_id, uint8_t on)
 {
-    HAL_GPIO_WritePin(CYLINDER2_PORT, CYLINDER2_PIN,
-                      on ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    if (arm_id == 1) {
+        HAL_GPIO_WritePin(CYLINDER1_PORT, CYLINDER1_PIN,
+                          on ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    } else if (arm_id == 2) {
+        HAL_GPIO_WritePin(CYLINDER2_PORT, CYLINDER2_PIN,
+                          on ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    }
 }
 
-void relay_vacuum1_set(uint8_t on)
+/* ======================== 上电初始化 ======================== */
+
+void relay_init(void)
 {
-    HAL_GPIO_WritePin(VACUUM1_PORT, VACUUM1_PIN,
-                      on ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    /* 上电: 两个电磁阀都通电 (HIGH), 两个气缸缩回 (LOW) */
+    vacuum_set(1, 1);   /* 真空阀1 通电 → 断真空 */
+    vacuum_set(2, 1);   /* 真空阀2 通电 → 断真空 */
+    cylinder_set(1, 0); /* 气缸1 缩回 */
+    cylinder_set(2, 0); /* 气缸2 缩回 */
 }
 
-void relay_vacuum2_set(uint8_t on)
+/* ======================== 电磁阀控制 ======================== */
+
+void relay_vacuum_off(uint8_t arm_id)
 {
-    HAL_GPIO_WritePin(VACUUM2_PORT, VACUUM2_PIN,
-                      on ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    /* 关闭电磁阀 (LOW) → 断电 → 产生真空吸力 → 吸KFS */
+    vacuum_set(arm_id, 0);
 }
 
-/* ======================== 高层KFS操作函数 ======================== */
+void relay_vacuum_on(uint8_t arm_id)
+{
+    /* 开启电磁阀 (HIGH) → 通电 → 断真空 → 放KFS */
+    vacuum_set(arm_id, 1);
+}
+
+/* ======================== 气缸控制 ======================== */
+
+void relay_cylinder_extend(uint8_t arm_id)
+{
+    cylinder_set(arm_id, 1);  /* HIGH → 伸出 */
+}
+
+void relay_cylinder_retract(uint8_t arm_id)
+{
+    cylinder_set(arm_id, 0);  /* LOW → 缩回 */
+}
+
+/* ======================== KFS操作序列 ======================== */
 
 /*
- * 拿第1个KFS:
- *   arm1: 伸出气缸1(PE5), 开启真空阀2(PF4) —— 用arm2的真空阀吸第一个KFS
- *   arm2: 伸出气缸2(PE6), 开启真空阀1(PF3) —— 用arm1的真空阀吸第一个KFS
+ * 吸KFS完整序列:
+ *   1. 关闭电磁阀 (LOW, 断电 → 产生真空吸力)
+ *   2. 气缸伸出 (HIGH, 推出吸住KFS)
+ *   3. 延时200ms
+ *   4. 气缸缩回 (LOW, 收回)
+ * 注意: 调用方需负责先将机械臂抬升到目标高度, 吸完后抬升到600并收到后面
  */
-void kfs_pickup_first(uint8_t arm_id)
+void relay_pickup_kfs(uint8_t arm_id)
 {
-    if (arm_id == 1)
-    {
-        relay_cylinder1_set(1);   /* 气缸1伸出 */
-        relay_vacuum2_set(1);     /* 真空阀2开启 */
-    }
-    else if (arm_id == 2)
-    {
-        relay_cylinder2_set(1);   /* 气缸2伸出 */
-        relay_vacuum1_set(1);     /* 真空阀1开启 */
-    }
+    relay_vacuum_off(arm_id);       /* 关电磁阀 → 吸 */
+    relay_cylinder_extend(arm_id);  /* 气缸伸出 */
+    osDelay(200);                   /* 等待吸附稳定 */
+    relay_cylinder_retract(arm_id); /* 气缸缩回 */
 }
 
 /*
- * 拿第2个KFS:
- *   arm1: 伸出气缸1(PE5), 关闭真空阀1(PF3) —— 切断arm1真空阀(已吸附的KFS保持真空)
- *   arm2: 伸出气缸2(PE6), 关闭真空阀2(PF4) —— 切断arm2真空阀(已吸附的KFS保持真空)
+ * 放KFS:
+ *   开启电磁阀 (HIGH, 通电 → 破真空 → 释放KFS)
  */
-void kfs_pickup_second(uint8_t arm_id)
+void relay_release_kfs(uint8_t arm_id)
 {
-    if (arm_id == 1)
-    {
-        relay_cylinder1_set(1);   /* 气缸1伸出 */
-        relay_vacuum1_set(0);     /* 真空阀1关闭 */
-    }
-    else if (arm_id == 2)
-    {
-        relay_cylinder2_set(1);   /* 气缸2伸出 */
-        relay_vacuum2_set(0);     /* 真空阀2关闭 */
-    }
-}
-
-/*
- * 放下KFS:
- *   arm1: 开启真空阀1(PF3) —— 释放吸附,放下KFS
- *   arm2: 开启真空阀2(PF4) —— 释放吸附,放下KFS
- */
-void kfs_release(uint8_t arm_id)
-{
-    if (arm_id == 1)
-    {
-        relay_vacuum1_set(1);     /* 真空阀1开启 → 破真空,释放KFS */
-    }
-    else if (arm_id == 2)
-    {
-        relay_vacuum2_set(1);     /* 真空阀2开启 → 破真空,释放KFS */
-    }
+    relay_vacuum_on(arm_id);
 }
 
 /* ======================== 调试测试函数 ======================== */
 
-/*
- * relay_test_all - 上电时逐一测试4个继电器IO口
- * 顺序: PE5(气缸1) → PE6(气缸2) → PF3(真空阀1) → PF4(真空阀2)
- * 每个引脚 HIGH 500ms → LOW, 全部完成后回到安全状态
- */
 void relay_test_all(void)
 {
     /* 气缸1 (PE5) */
-    relay_cylinder1_set(1);
-    HAL_Delay(500);
-    relay_cylinder1_set(0);
-    HAL_Delay(200);
+    relay_cylinder_extend(1);
+    osDelay(500);
+    relay_cylinder_retract(1);
+    osDelay(200);
 
     /* 气缸2 (PE6) */
-    relay_cylinder2_set(1);
-    HAL_Delay(500);
-    relay_cylinder2_set(0);
-    HAL_Delay(200);
+    relay_cylinder_extend(2);
+    osDelay(500);
+    relay_cylinder_retract(2);
+    osDelay(200);
 
-    /* 真空阀1 (PF3) */
-    relay_vacuum1_set(1);
-    HAL_Delay(500);
-    relay_vacuum1_set(0);
-    HAL_Delay(200);
+    /* 真空阀1 (PF3): 通电→断电→通电 */
+    relay_vacuum_off(1);
+    osDelay(500);
+    relay_vacuum_on(1);
+    osDelay(200);
 
-    /* 真空阀2 (PF4) */
-    relay_vacuum2_set(1);
-    HAL_Delay(500);
-    relay_vacuum2_set(0);
+    /* 真空阀2 (PF4): 通电→断电→通电 */
+    relay_vacuum_off(2);
+    osDelay(500);
+    relay_vacuum_on(2);
+
+    /* 最终状态: 两个电磁阀通电, 两个气缸缩回 (安全状态) */
 }

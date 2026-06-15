@@ -37,20 +37,21 @@ static uint32_t send_tick = 0;                  /* 发送时刻 (ms) */
 static char     pending_cmd[RC_CMD_MAX_LEN];    /* 待确认的指令内容 */
 
 /* ======================== 雷达映射表 ======================== */
-static const int8_t radar_map_table[13] = {
-    -1,     /* index 0: 无效 */
-     0,     /* index 1: → 0 */
-     1,     /* index 2: → 1 */
-     2,     /* index 3: → 2 */
-     3,     /* index 4: → 3 */
-     4,     /* index 5: → 4 */
-     6,     /* index 6: → 6 */
-     7,     /* index 7: → 7 */
-     9,     /* index 8: → 9 */
-    -1,     /* index 9: 超范围 */
-    -1,     /* index 10: 超范围 */
-    -1,     /* index 11: 超范围 */
-    -1,     /* index 12: 超范围 */
+static const int8_t radar_map_table[13] =
+{
+    -1,     // 0
+     0,     // 1 -> 0
+     1,     // 2 -> 1
+     2,     // 3 -> 2
+     3,     // 4 -> 3
+    -1,     // 5 无效
+     4,     // 6 -> 4
+     5,     // 7 -> 5
+    -1,     // 8 无效
+     6,     // 9 -> 6
+     7,     // 10 -> 7
+     8,     // 11 -> 8
+     9      // 12 -> 9
 };
 
 /* ======================== 内部函数前向声明 ======================== */
@@ -342,6 +343,16 @@ static void rc_rx_process_frame(void)
  */
 static void rc_parse_cmd(const char *buf, uint8_t len)
 {
+    /* 转大写，兼容上位机混合大小写 (如 ATake00, RAbsorb 等) */
+    char upper[RC_CMD_MAX_LEN];
+    uint8_t ulen = (len < RC_CMD_MAX_LEN) ? len : (RC_CMD_MAX_LEN - 1);
+    for (uint8_t i = 0; i < ulen; i++) {
+        upper[i] = (buf[i] >= 'a' && buf[i] <= 'z') ? (char)(buf[i] - 32) : buf[i];
+    }
+    upper[ulen] = '\0';
+    buf = upper;
+    len = ulen;
+
     rc_cmd_t cmd;
     cmd.type = RC_CMD_NONE;
     cmd.param1 = 0;

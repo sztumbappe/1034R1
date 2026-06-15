@@ -30,6 +30,7 @@
 #include "3508_control.h"
 #include "leg_task.h"
 #include "relay.h"
+#include "rc_protocol.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -106,7 +107,8 @@ int main(void)
   MX_FDCAN3_Init();
   MX_USART6_UART_Init();
   /* USER CODE BEGIN 2 */
-//  relay_test_all();   /* 继电器IO口测试 (调试用, 测试完成后注释掉) */
+  rc_protocol_init();   /* RC串口通信初始化 (必须在 MX_USART6_UART_Init 之后) */
+//  relay_init();       /* 继电器初始化: 两个电磁阀通电, 气缸缩回 */
   fdcan_config();
   /* USER CODE END 2 */
 

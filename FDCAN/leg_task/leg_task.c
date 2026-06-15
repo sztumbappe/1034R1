@@ -14,6 +14,7 @@
 #include "bsp_fdcan.h"
 #include "ROBSTRIDE.h"
 #include "relay.h"
+#include "score_task.h"
 #include "cmsis_os2.h"
 #include "math.h"
 
@@ -44,11 +45,12 @@ static void leg_hw_init(void)
  * get_lift_pos() — 根据 target 值返回对应高度的编码器偏移
  * target: 2=高200, 3=高400, 4=高600
  */
-static float get_lift_pos(volatile float *target, float pos1, float pos2, float pos3)
+static float get_lift_pos(volatile float *target, float pos0, float pos1, float pos2, float pos3)
 {
-    if (*target == 2) return pos1;
-    if (*target == 3) return pos2;
-    return pos3;                 /* 默认高600 */
+    if (*target == 1) return pos0;  /* 高100 */
+    if (*target == 2) return pos1;  /* 高200 */
+    if (*target == 3) return pos2;  /* 高400 */
+    return pos3;                    /* 默认高600 */
 }
 
 /* ======================== 3. 检测2006到达1/5 ======================== */
@@ -109,8 +111,8 @@ static float lift_tgt_blue;
 
 static void lift_control_update(void)
 {
-    lift_tgt_red  = get_lift_pos(&target_red,  LIFT_RED_POS1,  LIFT_RED_POS2,  LIFT_RED_POS3);
-    lift_tgt_blue = get_lift_pos(&target_blue, LIFT_BLUE_POS1, LIFT_BLUE_POS2, LIFT_BLUE_POS3);
+    lift_tgt_red  = get_lift_pos(&target_red,  LIFT_RED_POS0,  LIFT_RED_POS1,  LIFT_RED_POS2,  LIFT_RED_POS3);
+    lift_tgt_blue = get_lift_pos(&target_blue, LIFT_BLUE_POS0, LIFT_BLUE_POS1, LIFT_BLUE_POS2, LIFT_BLUE_POS3);
     lift_set_target(0, lift_tgt_red);
     lift_set_target(1, lift_tgt_blue);
     lift_goto_target();
@@ -154,6 +156,9 @@ void leg_task(void *argument)
 
         /* 3. 更新2号臂云台 */
         arm_gimbal_update(1, lift_tgt_blue, thresh_blue, &rob_started_blue);
+
+        /* 4. 处理RC指令 (得分状态机) */
+        score_update();
 
         lift_update_debug();
         osDelay(2);
