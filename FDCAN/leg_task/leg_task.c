@@ -68,7 +68,10 @@ void leg_task(void *argument)
 
         /* 灵足05: 到达1/5后开始运动 */
         if(robstride_started){
-            robstride_goto_target();
+            if(arm_close == 1)
+                robstride_goto_target(ROBSTRIDE_RETRACT_ANGLE);  /* 收回到-0.3f */
+            else
+                robstride_goto_target(ROBSTRIDE_TARGET_ANGLE_1); /* 正常到3.14f */
         }
 
         lift_update_debug();

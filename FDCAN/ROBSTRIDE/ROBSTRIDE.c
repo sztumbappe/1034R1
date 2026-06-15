@@ -596,21 +596,19 @@ static inline float robstride_clampf(float x, float lo, float hi)
 
 float h;
 float virtual_angle[2] = {0.0f, 0.0f};
-void robstride_goto_target(void)
+volatile float arm_close = 0;   /* 0=正常, 1=收回 */
+void robstride_goto_target(float tgt)
 {
     /* 控制参数 */
-    const float MAX_WRIST_SPEED = 4.0f;
-    const float WRIST_ANGLE_EPS = 0.005f;
+    const float MAX_WRIST_SPEED = 2.0f;
+    const float WRIST_ANGLE_EPS = 0.004f;
     const float STABLE_ALPHA    = 0.10f;
     const float DT              = 0.002f;
     const float Kp              = 100.0f;
-    const float Kd              = 5.0f;
+    const float Kd              = 4.5f;
 
     static float stable_target = 0.0f;
     static uint8_t initialized = 0;
-
-    /* 直接目标：3.14f */
-    float tgt = ROBSTRIDE_TARGET_ANGLE_1;
 
     /* 首次初始化：从当前实际角度开始 */
     if (!initialized)

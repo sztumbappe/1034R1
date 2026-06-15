@@ -106,7 +106,7 @@ int main(void)
   MX_FDCAN3_Init();
   MX_USART6_UART_Init();
   /* USER CODE BEGIN 2 */
-  relay_test_all();   /* 继电器IO口测试 (调试用, 测试完成后注释掉) */
+//  relay_test_all();   /* 继电器IO口测试 (调试用, 测试完成后注释掉) */
   fdcan_config();
   /* USER CODE END 2 */
 
