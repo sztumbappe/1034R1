@@ -13,14 +13,14 @@
 #define Robstirde_Motor_05_hfdcan  hfdcan1
 
 /* 双臂灵足05 CAN ID */
-#define ROBSTRIDE_ID_ARM1   1       /* 粉色臂云台 */
-#define ROBSTRIDE_ID_ARM2   2       /* 蓝色臂云台 */
+#define ROBSTRIDE_ID_ARM1   1       /* 1号臂云台 */
+#define ROBSTRIDE_ID_ARM2   2       /* 2号臂云台 */
 
 /* 灵足05目标角度 (rad) */
-#define ROBSTRIDE_TARGET_ANGLE_1   (3.14f)   /* 粉色臂目标 */
-#define ROBSTRIDE_TARGET_ANGLE_2   (-3.14f)  /* 蓝色臂目标 */
-#define ROBSTRIDE_RETRACT_ANGLE       (-0.3f)  /* 粉色臂收回目标 */
-#define ROBSTRIDE_RETRACT_ANGLE_BLUE  (0.3f)  /* 蓝色臂收回目标 */
+#define ROBSTRIDE_TARGET_ANGLE_1       (3.14f)   /* 1号臂展开到前面 */
+#define ROBSTRIDE_TARGET_ANGLE_2       (-3.14f)  /* 2号臂展开到前面 */
+#define ROBSTRIDE_RETRACT_ANGLE        (-0.3f)   /* 1号臂收到后面 */
+#define ROBSTRIDE_RETRACT_ANGLE_BLUE   (0.3f)    /* 2号臂收到后面 */
 
 /* 灵足05活动范围 */
 #define ROBSTRIDE_ANGLE_MIN   (-0.5f)
@@ -133,6 +133,6 @@ void Robstirde_Motor_05_process_frame(FDCAN_RxHeaderTypeDef *RX_Header, uint8_t 
 void robstride_init_offset_filtered(uint8_t motor_id);
 float robstride_get_relative_angle(uint8_t motor_id);
 void RobStride_Enable_AutoReport(FDCAN_HandleTypeDef *hfdcan, uint8_t motor_id, uint8_t master_id);
-extern volatile float arm_close;
+extern volatile float arm_close[2];   /* [0]=1号臂 [1]=2号臂: 0=展开到前面, 1=收到后面 */
 void robstride_goto_target(float tgt, uint8_t motor_idx);
 #endif

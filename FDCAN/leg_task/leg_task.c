@@ -1,10 +1,12 @@
 //
 // leg_task.c
-// 双臂灵足05云台(MIT) + 双2006抬升(RM)
-// 上电: 双2006抬升到高600 → 1/5处启动对应灵足
-// target=2/3/4: 切换双2006高度
-// 粉色臂(motor_idx=0): 目标3.14f, 收回-0.3f
-// 蓝色臂(motor_idx=1): 目标-3.14f, 收回0.3f
+// 双臂独立控制: 灵足05云台(MIT) + 2006抬升(RM)
+//
+// 遥控器接口变量:
+//   target_red   — 1号臂抬升高度 (2=高200, 3=高400, 4=高600)
+//   target_blue  — 2号臂抬升高度 (2=高200, 3=高400, 4=高600)
+//   arm_close[0] — 1号臂云台 (0=展开到前面, 1=收到后面)
+//   arm_close[1] — 2号臂云台 (0=展开到前面, 1=收到后面)
 //
 
 #include "leg_task.h"
@@ -15,94 +17,143 @@
 #include "cmsis_os2.h"
 #include "math.h"
 
-float s;
-volatile float target;
+/* ======================== 遥控器接口变量 ======================== */
+volatile float target_red  = 4;   /* 1号臂抬升: 2=高200, 3=高400, 4=高600 */
+volatile float target_blue = 4;   /* 2号臂抬升: 2=高200, 3=高400, 4=高600 */
+
+static float s;
 volatile float arm_init;
+
+/* ======================== 1. 硬件初始化 ======================== */
+/**
+ * leg_hw_init() — 上电硬件初始化 (不含等待信号)
+ * PID初始化 → 灵足使能 → 2006通讯 → 记录零点
+ */
+static void leg_hw_init(void)
+{
+    arm_PID_INIT();              // 2006 PID初始化
+    robstride_init();            // 使能双臂灵足05电机
+    osDelay(100);                // 等待灵足05电机就绪
+    s++;
+    di3508_r2control_Begin();    // 等待2006通讯建立
+    lift_init();                 // 记录双2006上电零点
+}
+
+/* ======================== 2. 抬升高度选择 ======================== */
+/**
+ * get_lift_pos() — 根据 target 值返回对应高度的编码器偏移
+ * target: 2=高200, 3=高400, 4=高600
+ */
+static float get_lift_pos(volatile float *target, float pos1, float pos2, float pos3)
+{
+    if (*target == 2) return pos1;
+    if (*target == 3) return pos2;
+    return pos3;                 /* 默认高600 */
+}
+
+/* ======================== 3. 检测2006到达1/5 ======================== */
+/**
+ * check_lift_reached() — 检测2006是否到达目标位置的1/5
+ * @param idx: 电机索引 (0=1号臂, 1=2号臂)
+ * @param lift_target: 当前抬升目标(编码器偏移)
+ * @param threshold: 1/5阈值
+ * @return 1=已到达, 0=未到达
+ */
+static uint8_t check_lift_reached(uint8_t idx, float lift_target, float threshold)
+{
+    float off = (float)lift_debug_offset[idx];
+    if (lift_target < 0)
+        return (off <= threshold) ? 1 : 0;
+    else
+        return (off >= threshold) ? 1 : 0;
+}
+
+/* ======================== 4. 单臂云台控制 ======================== */
+/**
+ * arm_gimbal_update() — 单臂: 检测2006到位 → 启动灵足 → 根据arm_close控制展开/收回
+ * @param idx: 0=1号臂, 1=2号臂
+ */
+static void arm_gimbal_update(uint8_t idx, float lift_target, float threshold,
+                               uint8_t *started)
+{
+    /* 检测2006到达1/5 → 启动灵足 */
+    if (!(*started)) {
+        if (check_lift_reached(idx, lift_target, threshold))
+            *started = 1;
+    }
+
+    /* 灵足云台运动 */
+    if (*started) {
+        if (idx == 0) {
+            /* 1号臂 (CAN ID=1) */
+            if (arm_close[0] == 1)
+                robstride_goto_target(ROBSTRIDE_RETRACT_ANGLE, 0);      /* 收到后面 */
+            else
+                robstride_goto_target(ROBSTRIDE_TARGET_ANGLE_1, 0);     /* 展开到前面 */
+        } else {
+            /* 2号臂 (CAN ID=2) */
+            if (arm_close[1] == 1)
+                robstride_goto_target(ROBSTRIDE_RETRACT_ANGLE_BLUE, 1); /* 收到后面 */
+            else
+                robstride_goto_target(ROBSTRIDE_TARGET_ANGLE_2, 1);     /* 展开到前面 */
+        }
+    }
+}
+
+/* ======================== 5. 抬升控制 ======================== */
+/**
+ * lift_control_update() — 更新双臂2006抬升目标并执行闭环
+ */
+static float lift_tgt_red;
+static float lift_tgt_blue;
+
+static void lift_control_update(void)
+{
+    lift_tgt_red  = get_lift_pos(&target_red,  LIFT_RED_POS1,  LIFT_RED_POS2,  LIFT_RED_POS3);
+    lift_tgt_blue = get_lift_pos(&target_blue, LIFT_BLUE_POS1, LIFT_BLUE_POS2, LIFT_BLUE_POS3);
+    lift_set_target(0, lift_tgt_red);
+    lift_set_target(1, lift_tgt_blue);
+    lift_goto_target();
+}
+
+/* ======================== 主任务 ======================== */
 void leg_task(void *argument)
 {
     UNUSED(argument);
-    osDelay(500);      
-    arm_PID_INIT();             // 2006 PID初始化
-    robstride_init();           // 使能双臂灵足05电机
-    osDelay(100);               // 等待灵足05电机完全就绪
-    s++;
-    di3508_r2control_Begin();   // 等待2006通讯 (FDCAN3) - 暂时注释
-    lift_init();                 // 记录双2006上电零点
+    osDelay(500);
 
-    /* 等待 arm_init==1 后才启动 */
-    while(arm_init != 1){
+    /* ---- 上电硬件初始化 ---- */
+    leg_hw_init();
+
+    /* ---- 等待启动信号 ---- */
+    while (arm_init != 1) {
         lift_update_debug();
         osDelay(10);
     }
 
-    /* arm_init==1 触发: 双2006抬升到高600 */
-    float current_lift_target_red  = (float)LIFT_RED_POS3;   /* 粉色臂高600 */
-    float current_lift_target_blue = (float)LIFT_BLUE_POS3;  /* 蓝色臂高600 */
-    lift_set_target(0, current_lift_target_red);
-    lift_set_target(1, current_lift_target_blue);
+    /* ---- 初始化抬升目标: 双臂高600 ---- */
+    lift_tgt_red  = (float)LIFT_RED_POS3;
+    lift_tgt_blue = (float)LIFT_BLUE_POS3;
+    lift_set_target(0, lift_tgt_red);
+    lift_set_target(1, lift_tgt_blue);
 
-    /* 灵足启动标志: 各臂2006到达1/5目标后才启动对应灵足 */
-    uint8_t robstride_started_red  = 0;
-    uint8_t robstride_started_blue = 0;
-    float lift_threshold_red  = current_lift_target_red  / 5.0f;
-    float lift_threshold_blue = current_lift_target_blue / 5.0f;
+    /* ---- 灵足启动标志: 各臂2006到达1/5后才启动，防止撞到车内 ---- */
+    uint8_t rob_started_red  = 0;
+    uint8_t rob_started_blue = 0;
+    float thresh_red  = lift_tgt_red  / 5.0f;
+    float thresh_blue = lift_tgt_blue / 5.0f;
 
+    /* ======================== 主循环 ======================== */
     for (;;)
     {
-        /* target=2/3/4: 切换双2006目标高度 */
-        if(target==2){
-            current_lift_target_red  = (float)LIFT_RED_POS1;   /* 粉色臂高200 */
-            current_lift_target_blue = (float)LIFT_BLUE_POS1;  /* 蓝色臂高200 */
-        } else if(target==3){
-            current_lift_target_red  = (float)LIFT_RED_POS2;   /* 粉色臂高400 */
-            current_lift_target_blue = (float)LIFT_BLUE_POS2;  /* 蓝色臂高400 */
-        } else if(target==4){
-            current_lift_target_red  = (float)LIFT_RED_POS3;   /* 粉色臂高600 */
-            current_lift_target_blue = (float)LIFT_BLUE_POS3;  /* 蓝色臂高600 */
-        }
-        lift_set_target(0, current_lift_target_red);
-        lift_set_target(1, current_lift_target_blue);
-        lift_goto_target();
+        /* 1. 更新双臂抬升 */
+        lift_control_update();
 
-        /* 检测粉色臂2006是否到达1/5目标 → 启动粉色灵足 */
-        if(!robstride_started_red){
-            float offset_red = (float)lift_debug_offset[0];
-            if(current_lift_target_red < 0){
-                if(offset_red <= lift_threshold_red)
-                    robstride_started_red = 1;
-            } else {
-                if(offset_red >= lift_threshold_red)
-                    robstride_started_red = 1;
-            }
-        }
+        /* 2. 更新1号臂云台 */
+        arm_gimbal_update(0, lift_tgt_red, thresh_red, &rob_started_red);
 
-        /* 检测蓝色臂2006是否到达1/5目标 → 启动蓝色灵足 */
-        if(!robstride_started_blue){
-            float offset_blue = (float)lift_debug_offset[1];
-            if(current_lift_target_blue < 0){
-                if(offset_blue <= lift_threshold_blue)
-                    robstride_started_blue = 1;
-            } else {
-                if(offset_blue >= lift_threshold_blue)
-                    robstride_started_blue = 1;
-            }
-        }
-
-        /* 粉色臂灵足05(motor_idx=0): 到达1/5后开始运动 */
-        if(robstride_started_red){
-            if(arm_close == 1)
-                robstride_goto_target(ROBSTRIDE_RETRACT_ANGLE, 0);      /* 粉色臂收回到-0.3f */
-            else
-                robstride_goto_target(ROBSTRIDE_TARGET_ANGLE_1, 0);     /* 粉色臂到3.14f */
-        }
-
-        /* 蓝色臂灵足05(motor_idx=1): 到达1/5后开始运动 */
-        if(robstride_started_blue){
-            if(arm_close == 1)
-                robstride_goto_target(ROBSTRIDE_RETRACT_ANGLE_BLUE, 1); /* 蓝色臂收到0.3f */
-            else
-                robstride_goto_target(ROBSTRIDE_TARGET_ANGLE_2, 1);     /* 蓝色臂到-3.14f */
-        }
+        /* 3. 更新2号臂云台 */
+        arm_gimbal_update(1, lift_tgt_blue, thresh_blue, &rob_started_blue);
 
         lift_update_debug();
         osDelay(2);

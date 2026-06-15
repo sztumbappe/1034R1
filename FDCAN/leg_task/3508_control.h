@@ -46,12 +46,12 @@ typedef struct {
 /* ======================== 2006位置定义 (相对上电位置的偏移) ======================== */
 /* 上电后手动转到目标位置，用Keil Watch读 total_ecd 填入下方值 */
 
-/* 粉色臂 2006 (control_3508_classic[0]) */
+/* 1号臂 2006 (control_3508_classic[0]) */
 #define LIFT_RED_POS1       (298515)        /* 高200 */
 #define LIFT_RED_POS2       (-442819)       /* 高400 */
-#define LIFT_RED_POS3       (-1000207)      /* 高600 */
+#define LIFT_RED_POS3       (-1022170)      /* 高600 */
 
-/* 蓝色臂 2006 (control_3508_classic[1]) */
+/* 2号臂 2006 (control_3508_classic[1]) */
 #define LIFT_BLUE_POS1      (-158140)        /* 高200 */
 #define LIFT_BLUE_POS2      (430772)       /* 高400 */
 #define LIFT_BLUE_POS3      (1022170)      /* 高600 */
@@ -79,7 +79,7 @@ void SetSpeed(motor_control *ptr, float speed);
 /* 2006抬升初始化 (记录上电零点) */
 void lift_init(void);
 
-/* 2006设置目标 (idx: 0=粉色臂 1=蓝色臂, target: 编码器偏移) */
+/* 2006设置目标 (idx: 0=1号臂, 1=2号臂, target: 编码器偏移) */
 void lift_set_target(uint8_t idx, float target);
 
 /* 2006抬升PID闭环 (主循环每周期调用, 持续保持位置) */

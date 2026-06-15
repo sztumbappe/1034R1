@@ -596,7 +596,7 @@ static inline float robstride_clampf(float x, float lo, float hi)
 
 float h;
 float virtual_angle[2] = {0.0f, 0.0f};
-volatile float arm_close = 0;   /* 0=正常, 1=收回 */
+volatile float arm_close[2] = {0, 0};  /* [0]=粉色臂 [1]=蓝色臂: 0=展开, 1=收回 */
 
 /*******************************************************************************
 * @功能      : 双臂灵足05平滑转到目标角度 (MIT运控模式)
