@@ -1,5 +1,6 @@
 #include "relay.h"
 #include "cmsis_os2.h"
+#include "esc_control.h"
 
 /* ======================== 低层GPIO控制 ======================== */
 
@@ -74,6 +75,8 @@ void relay_cylinder_retract(uint8_t arm_id)
  */
 void relay_pickup_kfs(uint8_t arm_id)
 {
+    motor_run_flag = 1;             /* 开启气泵 */
+    osDelay(100);                   /* 等待气泵转起来 */
     relay_vacuum_off(arm_id);       /* 关电磁阀 → 吸 */
     relay_cylinder_extend(arm_id);  /* 气缸伸出 */
     osDelay(200);                   /* 等待吸附稳定 */
