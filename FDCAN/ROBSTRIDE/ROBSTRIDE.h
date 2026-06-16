@@ -9,7 +9,6 @@
 #define M_PI 3.14159265358979323846f
 #endif
  
-#define Wrist_Motor_id 0x03
 #define Robstirde_Motor_05_hfdcan  hfdcan1
 
 /* Ë«±ÛÁé×ã05 CAN ID */

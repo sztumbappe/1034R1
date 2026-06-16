@@ -15,13 +15,12 @@
 #define SW_LPF_ALPHA    0.10f   // 数值越大越稳、响应越慢
 float sw_filter_val = 0.0f;
 uint8_t limit_state = 0;    // 0未触发 1限位触发
-
+float b;
 //限位开关读取+滤波处理
 void Limit_Switch_GetState(void)
 {
     // 读取原始电平
     uint8_t raw_level = HAL_GPIO_ReadPin(LIMIT_PORT, LIMIT_PIN);
-    
     // 一阶低通滤波 消机械抖动
     sw_filter_val = SW_LPF_ALPHA * sw_filter_val + (1 - SW_LPF_ALPHA) * raw_level;
 
@@ -169,7 +168,7 @@ void PID_INIT(void)
 void dj3508_r2_begin(void)
 {
     // 等待电机通讯建立（温度值非0表示通讯正常）
-    while (chassis_3508_motor[0].temperate == 0)
+    while (chassis_3508_motor[2].temperate == 0 && chassis_3508_motor[2].ecd == 0)
     {
         CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, 0, 0);
         vTaskDelay(pdMS_TO_TICKS(10)); // FreeRTOS延时（替代HAL_Delay）
@@ -191,8 +190,8 @@ void di3508_r2control_init(void)
             // 限位触发，多轮制动：用速度环PID目标=0快速刹停
             for (int i = 0; i < 5; i++)
             {
-                Pidcur = pid_calculate1(&pid_var1, (float)chassis_3508_motor[0].speed_rpm, 0);
-                CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, (int)Pidcur, 0, 0, 0);
+                Pidcur = pid_calculate1(&pid_var1, (float)chassis_3508_motor[2].speed_rpm, 0);
+                CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, (int)Pidcur, 0);
                 vTaskDelay(pdMS_TO_TICKS(5));
             }
             CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, 0, 0); // 彻底停止
@@ -204,8 +203,8 @@ void di3508_r2control_init(void)
         else
         {
             // 限位未触发，持续下降
-            Pidcur = pid_calculate1(&pid_var1, (float)chassis_3508_motor[0].speed_rpm, RAISE_CALIB_HIGH);
-            CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, (int)Pidcur, 0, 0, 0);
+            Pidcur = pid_calculate1(&pid_var1, (float)chassis_3508_motor[2].speed_rpm, RAISE_CALIB_HIGH);
+            CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, (int)Pidcur, 0);
             vTaskDelay(pdMS_TO_TICKS(10));
         }
     }
@@ -219,8 +218,8 @@ void di3508_r2control(void)
     {
         for (int i = 0; i < 5; i++)
         {
-            Pidcur = pid_calculate1(&pid_var1, (float)chassis_3508_motor[0].speed_rpm, 0);
-            CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, (int)Pidcur, 0, 0, 0);
+            Pidcur = pid_calculate1(&pid_var1, (float)chassis_3508_motor[2].speed_rpm, 0);
+            CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, (int)Pidcur, 0);
             vTaskDelay(pdMS_TO_TICKS(5));
         }
         CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, 0, 0);
@@ -231,13 +230,13 @@ void di3508_r2control(void)
 
     // 电机位置闭环控制
     Pidvar = pid_calculate1(&pid_dic, (float)total_ecd, raise_target_pos + (float)MOTOR_STECD);
-    Pidcur = pid_calculate1(&pid_var1, (float)chassis_3508_motor[0].speed_rpm, Pidvar);
-    CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, (int)Pidcur, 0, 0, 0);
+    Pidcur = pid_calculate1(&pid_var1, (float)chassis_3508_motor[2].speed_rpm, Pidvar);
+    CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, (int)Pidcur, 0);
 }
 
 /************************ FreeRTOS任务函数 ************************/
 float raising=0;
-float b;
+
 void Raise_task(void *argument)
 {
     UNUSED(argument);
@@ -247,7 +246,7 @@ void Raise_task(void *argument)
     {
         // 读取限位开关状态
         Limit_Switch_GetState();
-
+        b++;
         // 上电自动初始化 (无需外部触发)
         if (raise_init_done == 0)
         {
@@ -256,7 +255,7 @@ void Raise_task(void *argument)
             di3508_r2control_init();             // 电机零点校准（电子限位开关触发）
             osDelay(200);                        // 校准后短延时
             raise_init_done = 1;                 // 标记初始化完成
-            b++;
+
         }
 
         // 电机位置控制由变量使能

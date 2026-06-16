@@ -27,8 +27,8 @@ static char    cmd_buffer[RC_CMD_MAX_LEN];     /* 指令内容缓存 */
 static uint8_t cmd_len = 0;                     /* 当前指令长度 */
 
 /* ======================== 解析结果 ======================== */
-static rc_cmd_t latest_cmd;                     /* 最新解析到的指令 */
-static uint8_t  new_cmd_flag = 0;               /* 新指令标志 */
+rc_cmd_t latest_cmd;                     /* 最新解析到的指令 */
+uint8_t  new_cmd_flag = 0;               /* 新指令标志 */
 
 /* ======================== TX 发送控制 ======================== */
 static uint8_t  wait_ack = 0;                   /* 半双工锁: 1=等待ACK */
@@ -431,7 +431,6 @@ static void rc_parse_cmd(const char *buf, uint8_t len)
         cmd.type = RC_CMD_UPLIFT;
         cmd.param1 = parse_uint8(buf + 6, len - 6);
     }
-
     /* 更新最新指令 (仅合法指令) */
     if (cmd.type != RC_CMD_NONE) {
         latest_cmd = cmd;

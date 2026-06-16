@@ -95,25 +95,25 @@ void relay_test_all(void)
 {
     /* 气缸1 (PE5) */
     relay_cylinder_extend(1);
-    osDelay(500);
-    relay_cylinder_retract(1);
     osDelay(200);
+    relay_cylinder_retract(1);
+    osDelay(100);
 
     /* 气缸2 (PE6) */
     relay_cylinder_extend(2);
-    osDelay(500);
-    relay_cylinder_retract(2);
     osDelay(200);
+    relay_cylinder_retract(2);
+    osDelay(100);
 
     /* 真空阀1 (PF3): 通电→断电→通电 */
     relay_vacuum_off(1);
-    osDelay(500);
+    osDelay(100);
     relay_vacuum_on(1);
-    osDelay(200);
+    osDelay(100);
 
     /* 真空阀2 (PF4): 通电→断电→通电 */
     relay_vacuum_off(2);
-    osDelay(500);
+    osDelay(100);
     relay_vacuum_on(2);
 
     /* 最终状态: 两个电磁阀通电, 两个气缸缩回 (安全状态) */

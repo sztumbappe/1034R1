@@ -21,6 +21,7 @@
 #include "cmsis_os.h"
 #include "dma.h"
 #include "fdcan.h"
+#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
@@ -106,8 +107,9 @@ int main(void)
   MX_FDCAN2_Init();
   MX_FDCAN3_Init();
   MX_USART6_UART_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
-  rc_protocol_init();   /* RC串口通信初始化 (必须在 MX_USART6_UART_Init 之后) */
+  rc_protocol_init();   /* RC串口通信初始化*/
 //  relay_init();       /* 继电器初始化: 两个电磁阀通电, 气缸缩回 */
   fdcan_config();
   /* USER CODE END 2 */

@@ -182,21 +182,25 @@ void arm_PID_INIT(void)
             0,        // 死区
             15000,    // 最大输出（配合高速抬升）
             8000,     // 积分限幅
-            20,       // KP
+            15,       // KP
             0.3f,     // KI
             0);       // KD
     }
 }
 
 /* 等待2个2006电机通讯建立 (FDCAN3总线, 0x201和0x202) */
+/* 注: C610电调可能不报告温度(temperate始终为0), 改用ecd+speed_rpm判断是否收到数据 */
 void di3508_r2control_Begin(void)
 {
-    while (control_3508_classic[0].chassis_3508_motor.temperate == 0 ||
-           control_3508_classic[1].chassis_3508_motor.temperate == 0)
-    {
+//    /* 等待两个电机都收到过CAN反馈数据 */
+//    while ((control_3508_classic[0].chassis_3508_motor.ecd == 0 &&
+//            control_3508_classic[0].chassis_3508_motor.speed_rpm == 0) ||
+//           (control_3508_classic[1].chassis_3508_motor.ecd == 0 &&
+//            control_3508_classic[1].chassis_3508_motor.speed_rpm == 0))
+//    {
         CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, 0, 0);
         osDelay(10);
-    }
+//    }
 }
 
 /* ======================== 基础控制函数 ======================== */

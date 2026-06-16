@@ -5,6 +5,7 @@
 "fdcan\freertos.o"
 "fdcan\dma.o"
 "fdcan\fdcan.o"
+"fdcan\tim.o"
 "fdcan\usart.o"
 "fdcan\stm32h7xx_it.o"
 "fdcan\stm32h7xx_hal_msp.o"
@@ -45,6 +46,10 @@
 "fdcan\raise_task.o"
 "fdcan\leg_task.o"
 "fdcan\3508_control.o"
+"fdcan\rc_protocol.o"
+"fdcan\relay.o"
+"fdcan\score_task.o"
+"fdcan\esc_control.o"
 "fdcan\robstride.o"
 --strict --scatter "FDCAN\FDCAN.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols

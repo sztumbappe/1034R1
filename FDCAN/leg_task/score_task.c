@@ -137,6 +137,7 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
 
     /* ---- 开场定位 ---- */
     case RC_CMD_KFS:
+        arm_init = 1;  /* 收到KFS指令时触发启动 */
         if (cmd->param1 >= 1 && cmd->param1 <= 12) {
             target_red = (float)radar_to_height[cmd->param1];
         }

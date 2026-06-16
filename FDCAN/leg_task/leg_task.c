@@ -15,15 +15,19 @@
 #include "ROBSTRIDE.h"
 #include "relay.h"
 #include "score_task.h"
+#include "esc_control.h"
 #include "cmsis_os2.h"
 #include "math.h"
-
+#include "tim.h"
 /* ======================== 遥控器接口变量 ======================== */
-volatile float target_red  = 4;   /* 1号臂抬升: 2=高200, 3=高400, 4=高600 */
-volatile float target_blue = 4;   /* 2号臂抬升: 2=高200, 3=高400, 4=高600 */
-
+volatile float target_red  = 4;   /* 1号臂抬升: 1=高100, 2=高200, 3=高400, 4=高600 */
+volatile float target_blue = 4;   /* 2号臂抬升: 1=高100, 2=高200, 3=高400, 4=高600 */
 static float s;
 volatile float arm_init;
+
+/* ======================== 外部变量 ======================== */
+extern uint8_t raise_control_enable;
+extern float raise_target_pos;
 
 /* ======================== 1. 硬件初始化 ======================== */
 /**
@@ -32,7 +36,20 @@ volatile float arm_init;
  */
 static void leg_hw_init(void)
 {
+    /* ---- 全局状态重置: 防止上电乱动 ---- */
+    arm_init = 0;
+    arm_close[0] = 0;
+    arm_close[1] = 0;
+    target_red = 4;
+    target_blue = 4;
+    motor_run_flag = 0;
+    raise_control_enable = 0;
+    raise_target_pos = 0;
+    CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, 0, 0);
+
+	  esc_init();                  // ESC 电调上电校准 (阻塞约1.2s)
     arm_PID_INIT();              // 2006 PID初始化
+	  osDelay(100);                // 等待灵足05电机就绪
     robstride_init();            // 使能双臂灵足05电机
     osDelay(100);                // 等待灵足05电机就绪
     s++;
@@ -88,14 +105,14 @@ static void arm_gimbal_update(uint8_t idx, float lift_target, float threshold,
     if (*started) {
         if (idx == 0) {
             /* 1号臂 (CAN ID=1) */
-            if (arm_close[0] == 1)
-                robstride_goto_target(ROBSTRIDE_RETRACT_ANGLE, 0);      /* 收到后面 */
+            if (arm_close[0] == 1 && target_red > 2)
+                robstride_goto_target(ROBSTRIDE_RETRACT_ANGLE, 0);      /* 收到后面 (需target>2) */
             else
                 robstride_goto_target(ROBSTRIDE_TARGET_ANGLE_1, 0);     /* 展开到前面 */
         } else {
             /* 2号臂 (CAN ID=2) */
-            if (arm_close[1] == 1)
-                robstride_goto_target(ROBSTRIDE_RETRACT_ANGLE_BLUE, 1); /* 收到后面 */
+            if (arm_close[1] == 1 && target_blue > 2)
+                robstride_goto_target(ROBSTRIDE_RETRACT_ANGLE_BLUE, 1); /* 收到后面 (需target>2) */
             else
                 robstride_goto_target(ROBSTRIDE_TARGET_ANGLE_2, 1);     /* 展开到前面 */
         }
@@ -119,17 +136,18 @@ static void lift_control_update(void)
 }
 
 /* ======================== 主任务 ======================== */
+float s1,first;
 void leg_task(void *argument)
 {
     UNUSED(argument);
     osDelay(500);
-
     /* ---- 上电硬件初始化 ---- */
     leg_hw_init();
-
     /* ---- 等待启动信号 ---- */
+    relay_init();
     while (arm_init != 1) {
         lift_update_debug();
+        score_update();      /* 等待期间处理RC指令 (GAMETIM触发arm_init) */
         osDelay(10);
     }
 
@@ -144,10 +162,15 @@ void leg_task(void *argument)
     uint8_t rob_started_blue = 0;
     float thresh_red  = lift_tgt_red  / 5.0f;
     float thresh_blue = lift_tgt_blue / 5.0f;
+    uint8_t kfs_switched = 0;  /* 是否已从初始化高度切换到KFS高度 */
 
     /* ======================== 主循环 ======================== */
     for (;;)
     {
+			if(s1==1&&first==0){
+				relay_pickup_kfs(1);
+				first=1;
+			}
         /* 1. 更新双臂抬升 */
         lift_control_update();
 
@@ -159,6 +182,20 @@ void leg_task(void *argument)
 
         /* 4. 处理RC指令 (得分状态机) */
         score_update();
+
+        /* 5. ESC 电调控制 */
+        esc_update();
+
+        /* 6. 初始化完成判断: 两臂灵足都启动后，切到KFS高度 */
+        if (!kfs_switched && rob_started_red && rob_started_blue) {
+            lift_tgt_red  = get_lift_pos(&target_red,  LIFT_RED_POS0,  LIFT_RED_POS1,  LIFT_RED_POS2,  LIFT_RED_POS3);
+            lift_tgt_blue = get_lift_pos(&target_blue, LIFT_BLUE_POS0, LIFT_BLUE_POS1, LIFT_BLUE_POS2, LIFT_BLUE_POS3);
+            lift_set_target(0, lift_tgt_red);
+            lift_set_target(1, lift_tgt_blue);
+            thresh_red  = lift_tgt_red  / 5.0f;
+            thresh_blue = lift_tgt_blue / 5.0f;
+            kfs_switched = 1;
+        }
 
         lift_update_debug();
         osDelay(2);
