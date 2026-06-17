@@ -720,7 +720,7 @@ void robstride_goto_target(float tgt, uint8_t motor_idx)
     const float WRIST_ANGLE_EPS = 0.004f;
     const float STABLE_ALPHA    = 0.10f;
     const float DT              = 0.002f;
-    const float Kp              = 80.0f;    /* 降低刚度 (原100→80), 减少超调 */
+    const float Kp              = 100.0f;    /* 降低刚度 (原100→80), 减少超调 */
     const float Kd              = 4.5f;    
 
     /* S曲线(梯形加减速)参数 */

@@ -32,21 +32,19 @@ static uint32_t enter_tick[2] = {0, 0};
 /* ======================== 电磁阀状态跟踪 (用于SWITCH切换) ======================== */
 static uint8_t vacuum_state[2] = {1, 1}; /* 上电后两个电磁阀都通电(1=开) */
 
-/* ======================== 雷达数字→高度映射 ======================== */
-static const lift_height_t radar_to_height[13] = {
-    LIFT_H600,  /* 0: 无效, 默认600 */
-    LIFT_H400,  /* 1: 400 */
-    LIFT_H200,  /* 2: 200 */
-    LIFT_H400,  /* 3: 400 */
-    LIFT_H200,  /* 4: 200 */
-    LIFT_H600,  /* 5: 无效, 默认600 */
-    LIFT_H600,  /* 6: 600 */
-    LIFT_H400,  /* 7: 400 */
-    LIFT_H600,  /* 8: 无效, 默认600 */
-    LIFT_H400,  /* 9: 400 */
-    LIFT_H200,  /* 10: 200 */
-    LIFT_H400,  /* 11: 400 */
-    LIFT_H200,  /* 12: 200 */
+/* ======================== 协议值(0~9)→高度映射 ======================== */
+/* 协议值: 0→实际1, 1→2, 2→3, 3→4, 4→6, 5→7, 6→9, 7→10, 8→11, 9→12 */
+static const lift_height_t protocol_to_height[10] = {
+    LIFT_H400,  /* 0 → 实际1  → 高400 */
+    LIFT_H200,  /* 1 → 实际2  → 高200 */
+    LIFT_H400,  /* 2 → 实际3  → 高400 */
+    LIFT_H200,  /* 3 → 实际4  → 高200 */
+    LIFT_H600,  /* 4 → 实际6  → 高600 */
+    LIFT_H400,  /* 5 → 实际7  → 高400 */
+    LIFT_H400,  /* 6 → 实际9  → 高400 */
+    LIFT_H200,  /* 7 → 实际10 → 高200 */
+    LIFT_H400,  /* 8 → 实际11 → 高400 */
+    LIFT_H200,  /* 9 → 实际12 → 高200 */
 };
 
 /* ======================== 单臂状态机 ======================== */
@@ -138,11 +136,11 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
     /* ---- 开场定位 ---- */
     case RC_CMD_KFS:
         arm_init = 1;  /* 收到KFS指令时触发启动 */
-        if (cmd->param1 >= 1 && cmd->param1 <= 12) {
-            target_red = (float)radar_to_height[cmd->param1];
+        if (cmd->param1 <= 9) {
+            target_red = (float)protocol_to_height[cmd->param1];
         }
-        if (cmd->param2 >= 1 && cmd->param2 <= 12) {
-            target_blue = (float)radar_to_height[cmd->param2];
+        if (cmd->param2 <= 9) {
+            target_blue = (float)protocol_to_height[cmd->param2];
         }
         break;
 
