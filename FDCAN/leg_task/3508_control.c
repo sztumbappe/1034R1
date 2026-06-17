@@ -142,7 +142,7 @@ float Motor_SetPositionProfile(motor_control *MOTOR, MotorRun *motor,
     float dir = (pos_error > 0.0f) ? 1.0f : -1.0f;
 
     // 减速限制速度 (基于剩余距离)
-    float v_dec_limit = sqrtf(decel * dist / 3.0f);
+    float v_dec_limit = sqrtf(decel * dist / 1.5f);
 
     // 加速限制速度 (基于当前速度)
     float v_acc_limit = fabsf(motor->last_cmd_spd) + accel * dt;
