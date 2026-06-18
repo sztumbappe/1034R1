@@ -24,11 +24,12 @@ volatile float target_red  = 4;   /* 1号臂抬升: 1=高100, 2=高200, 3=高400
 volatile float target_blue = 4;   /* 2号臂抬升: 1=高100, 2=高200, 3=高400, 4=高600 */
 static float s;
 volatile float arm_init;
-
+    uint8_t rob_started_red  = 0;
+    uint8_t rob_started_blue = 0;
 /* ======================== 外部变量 ======================== */
 extern uint8_t raise_control_enable;
 extern float raise_target_pos;
-
+extern Motor_Pos_RobStrite_Info Pos_Info[4];// 两个电机接收信息
 /* ======================== 1. 硬件初始化 ======================== */
 /**
  * leg_hw_init() — 上电硬件初始化 (不含等待信号)
@@ -49,11 +50,11 @@ static void leg_hw_init(void)
 
 	  esc_init();                  // ESC 电调上电校准 (阻塞约1.2s)
     arm_PID_INIT();              // 2006 PID初始化
-	  osDelay(100);                // 等待灵足05电机就绪
+	  osDelay(200);                // 等待灵足05电机就绪
     robstride_init();            // 使能双臂灵足05电机
+	  di3508_r2control_Begin();    // 等待2006通讯建立
     osDelay(100);                // 等待灵足05电机就绪
     s++;
-    di3508_r2control_Begin();    // 等待2006通讯建立
     lift_init();                 // 记录双2006上电零点
 }
 
@@ -137,6 +138,7 @@ static void lift_control_update(void)
 
 /* ======================== 主任务 ======================== */
 float s1,first;
+float rc=0;
 void leg_task(void *argument)
 {
     UNUSED(argument);
@@ -147,8 +149,13 @@ void leg_task(void *argument)
     relay_init();
     while (arm_init != 1) {
         lift_update_debug();
-        score_update();      /* 等待期间处理RC指令 (GAMETIM触发arm_init) */
-        osDelay(10);
+        score_update();      /* 等待期间处理RC指令 (KFS触发arm_init) */
+        /* 发送空力矩MIT指令，保持灵足通信不超时 */
+        RobStrite_Motor_05_move_control(&Robstirde_Motor_05_hfdcan, 0,
+            Pos_Info[1].Angle, 0, 0, 0, ROBSTRIDE_ID_ARM1);
+        RobStrite_Motor_05_move_control(&Robstirde_Motor_05_hfdcan, 0,
+            Pos_Info[2].Angle, 0, 0, 0, ROBSTRIDE_ID_ARM2);
+        osDelay(50);
     }
 
     /* ---- 初始化抬升目标: 双臂高600 ---- */
@@ -158,8 +165,6 @@ void leg_task(void *argument)
     lift_set_target(1, lift_tgt_blue);
 
     /* ---- 灵足启动标志: 各臂2006到达1/5后才启动，防止撞到车内 ---- */
-    uint8_t rob_started_red  = 0;
-    uint8_t rob_started_blue = 0;
     float thresh_red  = lift_tgt_red  / 5.0f;
     float thresh_blue = lift_tgt_blue / 5.0f;
     uint8_t kfs_switched = 0;  /* 是否已从初始化高度切换到KFS高度 */
@@ -167,14 +172,24 @@ void leg_task(void *argument)
     /* ======================== 主循环 ======================== */
     for (;;)
     {
-			if(s1==1&&first==0){
-				relay_pickup_kfs(1);
-				first=1;
+		if(s1==1){
+            relay_pickup_kfs(1);
+            s1=2;
 			}
+		else if(s1==0)
+		{
+		 motor_run_flag = 0;             /* 关闭气泵 */
+		}
+	// 		if(rc==1){
+	// 			    relay_cylinder_extend(1);  /* 气缸伸出 */
+    // osDelay(300);                   /* 等待吸附稳定 */
+    // relay_cylinder_retract(1); /* 气缸缩回 */
+	// 			rc=0;
+	// 		}
         /* 1. 更新双臂抬升 */
         lift_control_update();
 
-        /* 2. 更新1号臂云台 */
+       /* 2. 更新1号臂云台 */
         arm_gimbal_update(0, lift_tgt_red, thresh_red, &rob_started_red);
 
         /* 3. 更新2号臂云台 */

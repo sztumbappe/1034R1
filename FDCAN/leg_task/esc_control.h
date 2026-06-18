@@ -6,7 +6,7 @@
 /* ======================== ESC 油门值 (TIM1 PWM Compare) ======================== */
 #define ESC_PWM_MIN      100    /* 停机 1000us */
 #define ESC_PWM_MAX      200    /* 校准用 2000us */
-#define ESC_PWM_40PCT    140    /* 40%油门 1400us */
+#define ESC_PWM_40PCT    130    /* 40%油门 1400us */
 
 /* ======================== 外部变量 ======================== */
 extern uint8_t motor_run_flag;   /* 0=停机, 1=运行 */
