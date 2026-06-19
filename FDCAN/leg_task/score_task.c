@@ -26,7 +26,7 @@ typedef enum {
 } score_state_t;
 
 /* ======================== 内部变量 ======================== */
-static score_state_t state[2] = {SCORE_IDLE, SCORE_IDLE};
+score_state_t state[2] = {SCORE_IDLE, SCORE_IDLE};
 static uint32_t enter_tick[2] = {0, 0};
 
 /* ======================== 电磁阀状态跟踪 (用于SWITCH切换) ======================== */
@@ -155,16 +155,18 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
         target_red = height_to_target(cmd->param1);
         break;
 
-    /* ---- 吸取 ---- */
     case RC_CMD_RABSORB:
-        /* 右臂吸取并收回 */
-        relay_pickup_kfs(2);
+        /* 右臂吸取：走完整取料流程（吸+收回+抬升600+） */
+        state[1] = SCORE_PICKUP_STEP1;
+        enter_tick[1] = osKernelGetTickCount();
         break;
 
     case RC_CMD_LABSORB:
-        /* 左臂吸取并收回 */
-        relay_pickup_kfs(1);
+        /* 左臂吸取：走完整取料流程（吸+收回+抬升600+） */
+        state[0] = SCORE_PICKUP_STEP1;
+        enter_tick[0] = osKernelGetTickCount();
         break;
+
 
     /* ---- 吸/放切换 ---- */
     case RC_CMD_RSWITCH:

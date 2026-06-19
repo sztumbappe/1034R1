@@ -47,7 +47,7 @@ typedef struct {
 /* 上电后手动转到目标位置，用Keil Watch读 total_ecd 填入下方值 */
 
 /* 1号臂 2006 (control_3508_classic[0]) */
-#define LIFT_RED_POS0       (681417)             /* 高100 — 占位符, 待填入编码器值 */
+#define LIFT_RED_POS0       (671417)             /* 高100 — 占位符, 待填入编码器值 */
 #define LIFT_RED_POS1       (298515)        /* 高200 */
 #define LIFT_RED_POS2       (-442819)       /* 高400 */
 #define LIFT_RED_POS3       (-1022170)      /* 高600 */

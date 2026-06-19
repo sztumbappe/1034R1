@@ -678,8 +678,8 @@ void robstride_goto_target(float tgt, uint8_t motor_idx)
     float abs_rem = fabsf(delta_total);
     float max_step = MAX_WRIST_SPEED * DT;
 
-    /* 减速区: 剩余距离 < 0.3rad 时开始减速，避免撞墙 */
-    const float DECEL_ZONE = 0.3f;
+    /* 减速区: 剩余距离 < 0.4rad 时开始减速，避免撞墙 */
+    const float DECEL_ZONE = 0.4f;
     if (abs_rem < DECEL_ZONE && abs_rem > WRIST_ANGLE_EPS) {
         float scale = 0.1f + 0.90f * (abs_rem / DECEL_ZONE);  /* 1.0→0.1 线性减速 */
         max_step *= scale;

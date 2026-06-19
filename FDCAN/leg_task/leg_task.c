@@ -172,9 +172,9 @@ void leg_task(void *argument)
     /* ======================== 主循环 ======================== */
     for (;;)
     {
-		if(s1==1){
-            relay_pickup_kfs(1);
-            s1=2;
+		if(s1>0.5){
+			relay_pickup_kfs(s1);
+			s1=-1;
 			}
 		else if(s1==0)
 		{
