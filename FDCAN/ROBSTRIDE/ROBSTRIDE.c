@@ -4,6 +4,7 @@
 #endif
 #include "main.h"
 #include "fdcan.h"
+#include "gpio.h"
 #include "string.h"
 #include "math.h"
 #include "bsp_fdcan.h"
@@ -662,26 +663,34 @@ void robstride_goto_target(float tgt, uint8_t motor_idx)
         initialized[motor_idx] = 1;
     }
 
-    /* 目标平滑更新 */
-    float error_to_target = tgt - stable_target[motor_idx];
+    /* 目标二阶平滑更新（串联两个一阶低通，高频衰减更强） */
+    static float mid_target[2] = {0.0f, 0.0f};
+    if (!initialized[motor_idx]) mid_target[motor_idx] = stable_target[motor_idx];
+    float error_to_target = tgt - mid_target[motor_idx];
     if (fabsf(error_to_target) < 0.01f)
-    {
-        stable_target[motor_idx] = tgt;
-    }
+        mid_target[motor_idx] = tgt;
     else
-    {
+        mid_target[motor_idx] += STABLE_ALPHA * error_to_target;
+    error_to_target = mid_target[motor_idx] - stable_target[motor_idx];
+    if (fabsf(error_to_target) < 0.01f)
+        stable_target[motor_idx] = mid_target[motor_idx];
+    else
         stable_target[motor_idx] += STABLE_ALPHA * error_to_target;
-    }
 
     /* 限速插值 + 减速区 */
     float delta_total = stable_target[motor_idx] - virtual_angle[motor_idx];
     float abs_rem = fabsf(delta_total);
     float max_step = MAX_WRIST_SPEED * DT;
 
-    /* 减速区: 剩余距离 < 0.4rad 时开始减速，避免撞墙 */
-    const float DECEL_ZONE = 0.4f;
+    /* 减速区: 吸着KFS时用大减速区(1.5rad)防甩，空载用小减速区(0.4rad) */
+    /* PF3=1号臂电磁阀, PF4=2号臂电磁阀; LOW=断电=有真空=吸着KFS */
+    GPIO_TypeDef *vac_port = GPIOF;
+    uint16_t vac_pin = (motor_idx == 0) ? GPIO_PIN_3 : GPIO_PIN_4;
+    uint8_t holding_kfs = (HAL_GPIO_ReadPin(vac_port, vac_pin) == GPIO_PIN_RESET);
+    const float DECEL_ZONE = holding_kfs ? 1.5f : 0.4f;
     if (abs_rem < DECEL_ZONE && abs_rem > WRIST_ANGLE_EPS) {
-        float scale = 0.1f + 0.90f * (abs_rem / DECEL_ZONE);  /* 1.0→0.1 线性减速 */
+        float ratio = abs_rem / DECEL_ZONE;
+        float scale = 0.1f + 0.90f * sqrtf(ratio);  /* 1.0→0.1 平方根减速（起步更柔和） */
         max_step *= scale;
     }
 
@@ -696,10 +705,19 @@ void robstride_goto_target(float tgt, uint8_t motor_idx)
     }
 
     /* 速度前馈 */
-    float dummy_speed = robstride_clampf(delta_total / DT, -MAX_WRIST_SPEED, MAX_WRIST_SPEED);
+    float dummy_speed = Pos_Info[can_id].Speed;
 
     /* 重力补偿前馈力矩 */
     float torque_ff = K_GRAVITY[motor_idx];
+
+    /* 力矩斜率限制: 防止力矩突变导致 KFS 甩脱 */
+    static float last_torque[2] = {0};
+    const float MAX_TORQUE_RATE = 1.5f;  /* Nm/周期 (每2ms) */
+    float dtorque = torque_ff - last_torque[motor_idx];
+    if (dtorque > MAX_TORQUE_RATE) dtorque = MAX_TORQUE_RATE;
+    if (dtorque < -MAX_TORQUE_RATE) dtorque = -MAX_TORQUE_RATE;
+    torque_ff = last_torque[motor_idx] + dtorque;
+    last_torque[motor_idx] = torque_ff;
 
     /* 发送MIT运控指令 (带重力补偿) */
     RobStrite_Motor_05_move_control(&Robstirde_Motor_05_hfdcan,
