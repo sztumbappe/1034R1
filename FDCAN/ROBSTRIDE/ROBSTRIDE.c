@@ -9,6 +9,8 @@
 #include "math.h"
 #include "bsp_fdcan.h"
 #include "stm32h7xx_hal_fdcan.h" 
+#include "gpio.h"
+#include "relay.h"
 #include <stdbool.h>
 #include "cmsis_os2.h"
 extern uint8_t rx_data[8];//数据缓存区
@@ -141,12 +143,12 @@ void robstride_init()
 	Motor_Set_All.set_motor_mode = move_control_mode;
 	drw.data_read_one = data_read_1;
 	drw.data_read_one(Index_List);
-
+	osDelay(50);
 	/* 第1步: 清除电机错误 (clear_error=1) */
 	Disenable_Motor(&Robstirde_Motor_05_hfdcan, 1, ROBSTRIDE_ID_ARM1);
-	osDelay(50);
+	osDelay(100);
 	Disenable_Motor(&Robstirde_Motor_05_hfdcan, 1, ROBSTRIDE_ID_ARM2);
-	osDelay(50);
+	osDelay(100);
 
 	/* 第2步: 使能双臂灵足05电机 (运控模式/MIT模式) */
 	Enable_Motor(&Robstirde_Motor_05_hfdcan, ROBSTRIDE_ID_ARM1);
@@ -621,6 +623,28 @@ static inline float robstride_clampf(float x, float lo, float hi)
 
 
 float virtual_angle[2] = {0.0f, 0.0f};
+
+/**
+ * robstride_keepalive() — 仅初始化+保持通信，不做运动
+ * 2006未到位时调用，完成 initialized 初始化，保持灵足不超时
+ */
+void robstride_keepalive(uint8_t motor_idx)
+{
+    if (motor_idx > 1) return;
+    uint8_t can_id = motor_idx + 1;
+
+    /* 首次调用：记录当前角度作为初始值 */
+    static uint8_t ka_init[2] = {0, 0};
+    if (!ka_init[motor_idx]) {
+        virtual_angle[motor_idx] = Pos_Info[can_id].Angle;
+        ka_init[motor_idx] = 1;
+    }
+
+    /* 用当前角度发 MIT 指令，保持通信+原地不动 */
+    RobStrite_Motor_05_move_control(&Robstirde_Motor_05_hfdcan, 0,
+        Pos_Info[can_id].Angle, 0, 100.0f, 4.5f, can_id);
+}
+
 volatile float arm_close[2] = {0, 0};  /* [0]=粉色臂 [1]=蓝色臂: 0=展开, 1=收回 */
 /* 重力补偿参数 (每臂独立, 初始值待实测标定) */
 float K_GRAVITY[2] = {1.5f, 2.0f};  /* [0]=粉色臂 [1]=蓝色臂, 单位 Nm */
@@ -633,7 +657,7 @@ float K_GRAVITY[2] = {1.5f, 2.0f};  /* [0]=粉色臂 [1]=蓝色臂, 单位 Nm */
 void robstride_goto_target(float tgt, uint8_t motor_idx)
 {
     /* 控制参数 */
-    const float MAX_WRIST_SPEED = 3.2f;
+    const float MAX_WRIST_SPEED = 3.5f;
     const float WRIST_ANGLE_EPS = 0.004f;
     const float STABLE_ALPHA    = 0.10f;
     const float DT              = 0.002f;
@@ -647,7 +671,15 @@ void robstride_goto_target(float tgt, uint8_t motor_idx)
     if (motor_idx > 1) return;
     uint8_t can_id = motor_idx + 1;  /* motor_idx=0→CAN ID=1(粉色臂), motor_idx=1→CAN ID=2(蓝色臂) */
 
-    /* CAN 数据有效性检查: 数据还没到则跳过本次发送 */
+    /* 首次初始化：直接用目标角度（先初始化，再检查数据） */
+    if (!initialized[motor_idx])
+    {
+        stable_target[motor_idx] = tgt;
+        virtual_angle[motor_idx] = Pos_Info[can_id].Angle;
+        initialized[motor_idx] = 1;
+    }
+
+    /* CAN 数据有效性检查：初始化后再检查 */
     if (Pos_Info[can_id].Angle == 0.0f &&
         Pos_Info[can_id].Speed == 0.0f &&
         Pos_Info[can_id].Torque == 0.0f)
@@ -655,23 +687,8 @@ void robstride_goto_target(float tgt, uint8_t motor_idx)
         return;
     }
 
-    /* 首次初始化：从当前实际角度开始 */
-    if (!initialized[motor_idx])
-    {
-        stable_target[motor_idx] = Pos_Info[can_id].Angle;
-        virtual_angle[motor_idx] = Pos_Info[can_id].Angle;
-        initialized[motor_idx] = 1;
-    }
-
-    /* 目标二阶平滑更新（串联两个一阶低通，高频衰减更强） */
-    static float mid_target[2] = {0.0f, 0.0f};
-    if (!initialized[motor_idx]) mid_target[motor_idx] = stable_target[motor_idx];
-    float error_to_target = tgt - mid_target[motor_idx];
-    if (fabsf(error_to_target) < 0.01f)
-        mid_target[motor_idx] = tgt;
-    else
-        mid_target[motor_idx] += STABLE_ALPHA * error_to_target;
-    error_to_target = mid_target[motor_idx] - stable_target[motor_idx];
+    /* 目标平滑更新 */
+    float error_to_target = tgt - stable_target[motor_idx];
     if (fabsf(error_to_target) < 0.01f)
         stable_target[motor_idx] = mid_target[motor_idx];
     else
@@ -682,15 +699,19 @@ void robstride_goto_target(float tgt, uint8_t motor_idx)
     float abs_rem = fabsf(delta_total);
     float max_step = MAX_WRIST_SPEED * DT;
 
-    /* 减速区: 吸着KFS时用大减速区(1.5rad)防甩，空载用小减速区(0.4rad) */
-    /* PF3=1号臂电磁阀, PF4=2号臂电磁阀; LOW=断电=有真空=吸着KFS */
-    GPIO_TypeDef *vac_port = GPIOF;
-    uint16_t vac_pin = (motor_idx == 0) ? GPIO_PIN_3 : GPIO_PIN_4;
-    uint8_t holding_kfs = (HAL_GPIO_ReadPin(vac_port, vac_pin) == GPIO_PIN_RESET);
-    const float DECEL_ZONE = holding_kfs ? 1.5f : 0.4f;
+    /* 读取真空阀状态判断负载 */
+    uint8_t has_load;
+    if (motor_idx == 0)
+        has_load = (HAL_GPIO_ReadPin(VACUUM1_PORT, VACUUM1_PIN) == GPIO_PIN_RESET);  // PF3 LOW=吸住
+    else
+        has_load = (HAL_GPIO_ReadPin(VACUUM2_PORT, VACUUM2_PIN) == GPIO_PIN_RESET);  // PF4 LOW=吸住
+
+    float DECEL_ZONE = has_load ? 1.5f : 0.5f;
+
+    /* 减速区: 剩余距离进入减速区时减速 */
     if (abs_rem < DECEL_ZONE && abs_rem > WRIST_ANGLE_EPS) {
         float ratio = abs_rem / DECEL_ZONE;
-        float scale = 0.1f + 0.90f * sqrtf(ratio);  /* 1.0→0.1 平方根减速（起步更柔和） */
+        float scale = 0.1f + 0.90f * sqrtf(ratio);  /* 开根号减速 */
         max_step *= scale;
     }
 
@@ -707,18 +728,7 @@ void robstride_goto_target(float tgt, uint8_t motor_idx)
     /* 速度前馈 */
     float dummy_speed = Pos_Info[can_id].Speed;
 
-    /* 重力补偿前馈力矩 */
     float torque_ff = K_GRAVITY[motor_idx];
-
-    /* 力矩斜率限制: 防止力矩突变导致 KFS 甩脱 */
-    static float last_torque[2] = {0};
-    const float MAX_TORQUE_RATE = 1.5f;  /* Nm/周期 (每2ms) */
-    float dtorque = torque_ff - last_torque[motor_idx];
-    if (dtorque > MAX_TORQUE_RATE) dtorque = MAX_TORQUE_RATE;
-    if (dtorque < -MAX_TORQUE_RATE) dtorque = -MAX_TORQUE_RATE;
-    torque_ff = last_torque[motor_idx] + dtorque;
-    last_torque[motor_idx] = torque_ff;
-
     /* 发送MIT运控指令 (带重力补偿) */
     RobStrite_Motor_05_move_control(&Robstirde_Motor_05_hfdcan,
                                     torque_ff,

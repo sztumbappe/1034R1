@@ -110,7 +110,7 @@ int main(void)
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
   rc_protocol_init();   /* RC串口通信初始化*/
-//  relay_init();       /* 继电器初始化: 两个电磁阀通电, 气缸缩回 */
+  relay_init();       /* 继电器初始化: 两个电磁阀通电, 气缸缩回 */
   fdcan_config();
   /* USER CODE END 2 */
 

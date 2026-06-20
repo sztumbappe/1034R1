@@ -50,7 +50,7 @@ static void leg_hw_init(void)
 
 	  esc_init();                  // ESC 电调上电校准 (阻塞约1.2s)
     arm_PID_INIT();              // 2006 PID初始化
-	  osDelay(200);                // 等待灵足05电机就绪
+	  osDelay(300);                // 等待灵足05电机就绪
     robstride_init();            // 使能双臂灵足05电机
 	  di3508_r2control_Begin();    // 等待2006通讯建立
     osDelay(100);                // 等待灵足05电机就绪
@@ -102,23 +102,26 @@ static void arm_gimbal_update(uint8_t idx, float lift_target, float threshold,
             *started = 1;
     }
 
-    /* 灵足云台运动 */
+    /* 无论是否启动，都发MIT指令保持灵足通信 */
     if (*started) {
+        // 正常运动控制
         if (idx == 0) {
-            /* 1号臂 (CAN ID=1) */
             if (arm_close[0] == 1 && target_red > 2)
-                robstride_goto_target(ROBSTRIDE_RETRACT_ANGLE, 0);      /* 收到后面 (需target>2) */
+                robstride_goto_target(ROBSTRIDE_RETRACT_ANGLE, 0);
             else
-                robstride_goto_target(ROBSTRIDE_TARGET_ANGLE_1, 0);     /* 展开到前面 */
+                robstride_goto_target(ROBSTRIDE_TARGET_ANGLE_1, 0);
         } else {
-            /* 2号臂 (CAN ID=2) */
             if (arm_close[1] == 1 && target_blue > 2)
-                robstride_goto_target(ROBSTRIDE_RETRACT_ANGLE_BLUE, 1); /* 收到后面 (需target>2) */
+                robstride_goto_target(ROBSTRIDE_RETRACT_ANGLE_BLUE, 1);
             else
-                robstride_goto_target(ROBSTRIDE_TARGET_ANGLE_2, 1);     /* 展开到前面 */
+                robstride_goto_target(ROBSTRIDE_TARGET_ANGLE_2, 1);
         }
+        } else {
+        /* 2006还没到位：调用 keepalive 完成初始化+保持通信，原地不动 */
+        robstride_keepalive(idx);
     }
 }
+
 
 /* ======================== 5. 抬升控制 ======================== */
 /**
@@ -142,19 +145,18 @@ float rc=0;
 void leg_task(void *argument)
 {
     UNUSED(argument);
-    osDelay(500);
+    osDelay(1000);
     /* ---- 上电硬件初始化 ---- */
     leg_hw_init();
-    /* ---- 等待启动信号 ---- */
-    relay_init();
+
     while (arm_init != 1) {
         lift_update_debug();
         score_update();      /* 等待期间处理RC指令 (KFS触发arm_init) */
-        /* 发送空力矩MIT指令，保持灵足通信不超时 */
+        /* 发送保持力矩MIT指令，保持灵足通信不超时 */
         RobStrite_Motor_05_move_control(&Robstirde_Motor_05_hfdcan, 0,
-            Pos_Info[1].Angle, 0, 0, 0, ROBSTRIDE_ID_ARM1);
+            Pos_Info[1].Angle, 0, 100.0f, 4.5f, ROBSTRIDE_ID_ARM1);
         RobStrite_Motor_05_move_control(&Robstirde_Motor_05_hfdcan, 0,
-            Pos_Info[2].Angle, 0, 0, 0, ROBSTRIDE_ID_ARM2);
+            Pos_Info[2].Angle, 0, 100.0f, 4.5f, ROBSTRIDE_ID_ARM2);
         osDelay(50);
     }
 
@@ -173,6 +175,7 @@ void leg_task(void *argument)
     for (;;)
     {
 		if(s1>0.5){
+			motor_run_flag = 1;    
 			relay_pickup_kfs(s1);
 			s1=-1;
 			}

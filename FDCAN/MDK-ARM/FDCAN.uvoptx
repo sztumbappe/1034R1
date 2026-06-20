@@ -315,6 +315,11 @@
           <WinNumber>1</WinNumber>
           <ItemText>\\FDCAN\../leg_task/leg_task.c\target_red</ItemText>
         </Ww>
+        <Ww>
+          <count>33</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>initialized[1]</ItemText>
+        </Ww>
       </WatchWindow1>
       <Tracepoint>
         <THDelay>0</THDelay>

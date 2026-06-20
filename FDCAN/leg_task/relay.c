@@ -85,7 +85,7 @@ void relay_pickup_kfs(uint8_t arm_id)
 
     relay_vacuum_off(arm_id);       /* 关电磁阀 → 吸 */
     relay_cylinder_extend(arm_id);  /* 气缸伸出 */
-    osDelay(200);                   /* 等待吸附稳定 */
+    osDelay(300);                   /* 等待吸附稳定 */
     relay_cylinder_retract(arm_id); /* 气缸缩回 */
 }
 
