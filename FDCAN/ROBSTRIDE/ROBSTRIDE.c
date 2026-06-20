@@ -143,16 +143,11 @@ void robstride_init()
 	Motor_Set_All.set_motor_mode = move_control_mode;
 	drw.data_read_one = data_read_1;
 	drw.data_read_one(Index_List);
-	osDelay(50);
-	/* 第1步: 清除电机错误 (clear_error=1) */
-	Disenable_Motor(&Robstirde_Motor_05_hfdcan, 1, ROBSTRIDE_ID_ARM1);
-	osDelay(100);
-	Disenable_Motor(&Robstirde_Motor_05_hfdcan, 1, ROBSTRIDE_ID_ARM2);
 	osDelay(100);
 
-	/* 第2步: 使能双臂灵足05电机 (运控模式/MIT模式) */
+	/* 直接使能双臂灵足05电机 (运控模式/MIT模式) */
 	Enable_Motor(&Robstirde_Motor_05_hfdcan, ROBSTRIDE_ID_ARM1);
-	osDelay(50);
+	osDelay(100);
 	Enable_Motor(&Robstirde_Motor_05_hfdcan, ROBSTRIDE_ID_ARM2);
 	osDelay(100);
 
@@ -621,7 +616,6 @@ static inline float robstride_clampf(float x, float lo, float hi)
     return x;
 }
 
-
 float virtual_angle[2] = {0.0f, 0.0f};
 
 /**
@@ -690,9 +684,13 @@ void robstride_goto_target(float tgt, uint8_t motor_idx)
     /* 目标平滑更新 */
     float error_to_target = tgt - stable_target[motor_idx];
     if (fabsf(error_to_target) < 0.01f)
-        stable_target[motor_idx] = mid_target[motor_idx];
+    {
+        stable_target[motor_idx] = tgt;
+    }
     else
+    {
         stable_target[motor_idx] += STABLE_ALPHA * error_to_target;
+    }
 
     /* 限速插值 + 减速区 */
     float delta_total = stable_target[motor_idx] - virtual_angle[motor_idx];
@@ -726,7 +724,7 @@ void robstride_goto_target(float tgt, uint8_t motor_idx)
     }
 
     /* 速度前馈 */
-    float dummy_speed = Pos_Info[can_id].Speed;
+    float dummy_speed = robstride_clampf(delta_total / DT, -MAX_WRIST_SPEED, MAX_WRIST_SPEED);
 
     float torque_ff = K_GRAVITY[motor_idx];
     /* 发送MIT运控指令 (带重力补偿) */

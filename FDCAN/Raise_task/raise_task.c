@@ -158,7 +158,7 @@ void PID_INIT(void)
     // 位置环PID初始化（max_out限制最大速度指令，防止电机转太快）
     pid_struct_init(&pid_dic,
                     150,        // 死区
-                    9000,       // 最大输出（限制位置环最大速度指令为3000RPM）
+                    6000,       // 最大输出（限制位置环最大速度指令为3000RPM）
                     9000,       // 积分限幅
                     0.2f,       // KP
                     0,          // KI
@@ -214,19 +214,19 @@ void di3508_r2control(void)
 {
     // 限位保护: 下降时如果触发限位，立即刹车并重记零点
     Limit_Switch_GetState();
-    if (limit_state == 1)
-    {
-        for (int i = 0; i < 5; i++)
-        {
-            Pidcur = pid_calculate1(&pid_var1, (float)chassis_3508_motor[2].speed_rpm, 0);
-            CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, (int)Pidcur, 0);
-            vTaskDelay(pdMS_TO_TICKS(5));
-        }
-        CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, 0, 0);
-        MOTOR_STECD = total_ecd;
-        raise_control_enable = 0;
-        return;
-    }
+//    if (limit_state == 1)
+//    {
+//        for (int i = 0; i < 5; i++)
+//        {
+//            Pidcur = pid_calculate1(&pid_var1, (float)chassis_3508_motor[2].speed_rpm, 0);
+//            CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, (int)Pidcur, 0);
+//            vTaskDelay(pdMS_TO_TICKS(5));
+//        }
+//        CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, 0, 0);
+//        MOTOR_STECD = total_ecd;
+//        raise_control_enable = 0;
+//        return;
+//    }
 
     // 电机位置闭环控制
     Pidvar = pid_calculate1(&pid_dic, (float)total_ecd, raise_target_pos + (float)MOTOR_STECD);
@@ -236,7 +236,6 @@ void di3508_r2control(void)
 
 /************************ FreeRTOS任务函数 ************************/
 float raising=0;
-
 void Raise_task(void *argument)
 {
     UNUSED(argument);

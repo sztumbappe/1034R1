@@ -3,7 +3,7 @@
 <title>Static Call Graph - [FDCAN\FDCAN.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image FDCAN\FDCAN.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6230001: Last Updated: Sat Jun 20 14:41:39 2026
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6230001: Last Updated: Sat Jun 20 21:19:24 2026
 <BR><P>
 <H3>Maximum Stack Usage =        368 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -1812,12 +1812,11 @@ Global Symbols
 <P><STRONG><a name="[a1]"></a>data_read_1</STRONG> (Thumb, 84 bytes, Stack size 0 bytes, robstride.o(.text.data_read_1))
 <BR>[Address Reference Count : 1]<UL><LI> robstride.o(.text.robstride_init)
 </UL>
-<P><STRONG><a name="[129]"></a>di3508_r2control</STRONG> (Thumb, 984 bytes, Stack size 40 bytes, raise_task.o(.text.di3508_r2control))
-<BR><BR>[Stack]<UL><LI>Max Depth = 112<LI>Call Chain = di3508_r2control &rArr; vTaskDelay &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
+<P><STRONG><a name="[129]"></a>di3508_r2control</STRONG> (Thumb, 640 bytes, Stack size 16 bytes, raise_task.o(.text.di3508_r2control))
+<BR><BR>[Stack]<UL><LI>Max Depth = 60<LI>Call Chain = di3508_r2control &rArr; CAN_CMD_RM &rArr; HAL_FDCAN_AddMessageToTxFifoQ
 </UL>
 <BR>[Calls]<UL><LI><a href="#[126]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_ReadPin
 <LI><a href="#[bc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CAN_CMD_RM
-<LI><a href="#[127]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelay
 </UL>
 <BR>[Called By]<UL><LI><a href="#[97]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Raise_task
 </UL>
@@ -2053,7 +2052,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
-<P><STRONG><a name="[13e]"></a>robstride_init</STRONG> (Thumb, 840 bytes, Stack size 128 bytes, robstride.o(.text.robstride_init))
+<P><STRONG><a name="[13e]"></a>robstride_init</STRONG> (Thumb, 732 bytes, Stack size 128 bytes, robstride.o(.text.robstride_init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 208<LI>Call Chain = robstride_init &rArr; osDelay &rArr; vTaskDelay &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[125]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
@@ -2202,7 +2201,6 @@ Global Symbols
 </UL>
 <BR>[Called By]<UL><LI><a href="#[125]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
 <LI><a href="#[97]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Raise_task
-<LI><a href="#[129]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;di3508_r2control
 <LI><a href="#[128]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;di3508_r2control_init
 </UL>
 

@@ -145,7 +145,7 @@ float rc=0;
 void leg_task(void *argument)
 {
     UNUSED(argument);
-    osDelay(1000);
+    osDelay(500);
     /* ---- 上电硬件初始化 ---- */
     leg_hw_init();
 
