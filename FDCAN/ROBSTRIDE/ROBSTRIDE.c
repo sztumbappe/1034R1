@@ -690,9 +690,13 @@ void robstride_goto_target(float tgt, uint8_t motor_idx)
     /* 目标平滑更新 */
     float error_to_target = tgt - stable_target[motor_idx];
     if (fabsf(error_to_target) < 0.01f)
-        stable_target[motor_idx] = mid_target[motor_idx];
+    {
+        stable_target[motor_idx] = tgt;
+    }
     else
+    {
         stable_target[motor_idx] += STABLE_ALPHA * error_to_target;
+    }
 
     /* 限速插值 + 减速区 */
     float delta_total = stable_target[motor_idx] - virtual_angle[motor_idx];
@@ -726,7 +730,7 @@ void robstride_goto_target(float tgt, uint8_t motor_idx)
     }
 
     /* 速度前馈 */
-    float dummy_speed = Pos_Info[can_id].Speed;
+    float dummy_speed = robstride_clampf(delta_total / DT, -MAX_WRIST_SPEED, MAX_WRIST_SPEED);
 
     float torque_ff = K_GRAVITY[motor_idx];
     /* 发送MIT运控指令 (带重力补偿) */
