@@ -212,21 +212,25 @@ void di3508_r2control_init(void)
 
 void di3508_r2control(void)
 {
-    // 限位保护: 下降时如果触发限位，立即刹车并重记零点
+    // 限位保护: 方向感知——只在不需要上升时触发保护
     Limit_Switch_GetState();
-//    if (limit_state == 1)
-//    {
-//        for (int i = 0; i < 5; i++)
-//        {
-//            Pidcur = pid_calculate1(&pid_var1, (float)chassis_3508_motor[2].speed_rpm, 0);
-//            CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, (int)Pidcur, 0);
-//            vTaskDelay(pdMS_TO_TICKS(5));
-//        }
-//        CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, 0, 0);
-//        MOTOR_STECD = total_ecd;
-//        raise_control_enable = 0;
-//        return;
-//    }
+    if (limit_state == 1)
+    {
+        // raise_target_pos <= 0: 不需要上升，触发保护（刹车+重记零点）
+        // raise_target_pos > 0:  需要上升，跳过保护让电机离开限位开关
+        if (raise_target_pos <= 0)
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                Pidcur = pid_calculate1(&pid_var1, (float)chassis_3508_motor[2].speed_rpm, 0);
+                CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, (int)Pidcur, 0);
+                vTaskDelay(pdMS_TO_TICKS(5));
+            }
+            CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, 0, 0);
+            MOTOR_STECD = total_ecd;
+            return;
+        }
+    }
 
     // 电机位置闭环控制
     Pidvar = pid_calculate1(&pid_dic, (float)total_ecd, raise_target_pos + (float)MOTOR_STECD);
