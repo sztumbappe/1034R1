@@ -431,6 +431,30 @@ static void rc_parse_cmd(const char *buf, uint8_t len)
         cmd.type = RC_CMD_UPLIFT;
         cmd.param1 = parse_uint8(buf + 6, len - 6);
     }
+    /* ---- 左臂收回: LRECALL ---- */
+    else if (match_prefix(buf, len, "LRECALL") >= 0) {
+        cmd.type = RC_CMD_LRECALL;
+    }
+    /* ---- 右臂收回: RRECALL ---- */
+    else if (match_prefix(buf, len, "RRECALL") >= 0) {
+        cmd.type = RC_CMD_RRECALL;
+    }
+    /* ---- 左臂放料准备: LOUTLAY ---- */
+    else if (match_prefix(buf, len, "LOUTLAY") >= 0) {
+        cmd.type = RC_CMD_LOUTLAY;
+    }
+    /* ---- 右臂放料准备: ROUTLAY ---- */
+    else if (match_prefix(buf, len, "ROUTLAY") >= 0) {
+        cmd.type = RC_CMD_ROUTLAY;
+    }
+    /* ---- R2预备姿态: R2READY ---- */
+    else if (match_prefix(buf, len, "R2READY") >= 0) {
+        cmd.type = RC_CMD_R2READY;
+    }
+    /* ---- 触发放料准备: TRIGGER ---- */
+    else if (match_prefix(buf, len, "TRIGGER") >= 0) {
+        cmd.type = RC_CMD_TRIGGER;
+    }
     /* 更新最新指令 (仅合法指令) */
     if (cmd.type != RC_CMD_NONE) {
         latest_cmd = cmd;

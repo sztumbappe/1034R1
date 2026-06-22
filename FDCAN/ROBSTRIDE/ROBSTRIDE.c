@@ -151,16 +151,23 @@ void robstride_init()
 	Enable_Motor(&Robstirde_Motor_05_hfdcan, ROBSTRIDE_ID_ARM2);
 	osDelay(100);
 
-	/* 第3步: 等待电机完成归零 (pattern == 2), 带超时保护 */
+	/* 等待: pattern==2 且 角度安全 (1号<0°, 2号>0°) */
 	uint32_t timeout = 0;
-	while ((Pos_Info[1].pattern != 2 || Pos_Info[2].pattern != 2) && timeout < 1000)
+	while (timeout < 300)  /* 最多等3秒 (300×10ms) */
 	{
-		/* 持续发送运控指令 (空力矩), 保持通信活跃 */
+		/* 零力矩心跳, 保持通信 */
 		RobStrite_Motor_05_move_control(&Robstirde_Motor_05_hfdcan, 0,
 			Pos_Info[1].Angle, 0, 0, 0, ROBSTRIDE_ID_ARM1);
 		RobStrite_Motor_05_move_control(&Robstirde_Motor_05_hfdcan, 0,
 			Pos_Info[2].Angle, 0, 0, 0, ROBSTRIDE_ID_ARM2);
-		osDelay(20);
+		osDelay(10);
+		/* 合并判据: pattern==2 且 角度方向正确 */
+		if (Pos_Info[1].pattern == 2 && Pos_Info[2].pattern == 2 &&
+			Pos_Info[1].Angle != 0.0f && Pos_Info[1].Angle < 0.0f &&
+			Pos_Info[2].Angle != 0.0f && Pos_Info[2].Angle > 0.0f)
+		{
+			break;
+		}
 		timeout++;
 	}
 
@@ -649,6 +656,61 @@ void robstride_keepalive(uint8_t motor_idx)
     /* 用当前角度发 MIT 指令，保持通信+原地不动 */
     RobStrite_Motor_05_move_control(&Robstirde_Motor_05_hfdcan, 0,
         Pos_Info[can_id].Angle, 0, 100.0f, 4.5f, can_id);
+}
+
+/**
+ * robstride_goto_init() — 低增益平滑归零 (自检模式)
+ * 用于 arm_init==0 阶段，灵足平滑移动到目标角度
+ * Kp=20, Kd=1.5, 限速1.5rad/s，避免大力矩冲击导致晃动
+ */
+void robstride_goto_init(float tgt, uint8_t motor_idx)
+{
+    const float MAX_SPD = 1.5f;    /* 低速 */
+    const float EPS     = 0.004f;
+    const float ALPHA   = 0.05f;   /* 慢速目标平滑 */
+    const float DT      = 0.002f;
+    const float Kp      = 20.0f;   /* 低增益 */
+    const float Kd      = 1.5f;
+
+    if (motor_idx > 1) return;
+    uint8_t can_id = motor_idx + 1;
+
+    /* 首次初始化 */
+    if (!rob_goto_init[motor_idx]) {
+        rob_stable_target[motor_idx] = tgt;
+        virtual_angle[motor_idx] = Pos_Info[can_id].Angle;
+        rob_goto_init[motor_idx] = 1;
+    }
+
+    /* CAN 数据有效性检查 */
+    if (Pos_Info[can_id].Angle == 0.0f &&
+        Pos_Info[can_id].Speed == 0.0f &&
+        Pos_Info[can_id].Torque == 0.0f)
+    {
+        return;
+    }
+
+    /* 慢速目标平滑 */
+    float err = tgt - rob_stable_target[motor_idx];
+    if (fabsf(err) < 0.01f)
+        rob_stable_target[motor_idx] = tgt;
+    else
+        rob_stable_target[motor_idx] += ALPHA * err;
+
+    /* 限速 */
+    float delta = rob_stable_target[motor_idx] - virtual_angle[motor_idx];
+    float abs_rem = fabsf(delta);
+    float max_step = MAX_SPD * DT;
+    if (abs_rem > EPS) {
+        float step = fminf(max_step, abs_rem);
+        virtual_angle[motor_idx] += (delta > 0) ? step : -step;
+    } else {
+        virtual_angle[motor_idx] = rob_stable_target[motor_idx];
+    }
+
+    float spd_ff = robstride_clampf(delta / DT, -MAX_SPD, MAX_SPD);
+    RobStrite_Motor_05_move_control(&Robstirde_Motor_05_hfdcan,
+        0, virtual_angle[motor_idx], spd_ff, Kp, Kd, can_id);
 }
 
 volatile float arm_close[2] = {0, 0};  /* [0]=粉色臂 [1]=蓝色臂: 0=展开, 1=收回 */

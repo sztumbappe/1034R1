@@ -134,6 +134,7 @@ float robstride_get_relative_angle(uint8_t motor_id);
 void RobStride_Enable_AutoReport(FDCAN_HandleTypeDef *hfdcan, uint8_t motor_id, uint8_t master_id);
 extern volatile float arm_close[2];   /* [0]=1号臂 [1]=2号臂: 0=展开到前面, 1=收到后面 */
 void robstride_goto_target(float tgt, uint8_t motor_idx);
+void robstride_goto_init(float tgt, uint8_t motor_idx);
 void robstride_goto_reset(void);
 void robstride_keepalive(uint8_t motor_idx);
 /* 重力补偿系数 (可在运行时调整) */
