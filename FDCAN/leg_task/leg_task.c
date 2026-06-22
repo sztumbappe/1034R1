@@ -48,6 +48,7 @@ static void leg_hw_init(void)
     raise_target_pos = 0;
     CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, 0, 0);
 
+    robstride_goto_reset();      // 重置灵足静态变量(防Debug复位残留)
     esc_init();                  // ESC 电调上电校准 (阻塞约1.2s)
     arm_PID_INIT();              // 2006 PID初始化
     osDelay(300);                // 等待灵足05电机就绪
@@ -63,8 +64,8 @@ static float get_lift_pos(volatile float *target, float pos0, float pos1, float 
 {
     if (*target == 1) return pos0;  /* 高100 */
     if (*target == 2) return pos1;  /* 高200 */
-    if (*target == 4) return pos3;  /* 高600 */
-    return pos2;                    /* 默认高400 */
+    if (*target == 3) return pos2;  /* 高400 */
+    return pos3 ;                    /* 默认高600 */
 }
 
 /* ======================== 3. 灵足控制 (阶段感知) ======================== */
@@ -120,9 +121,9 @@ void leg_task(void *argument)
     /* ---- 上电硬件初始化 ---- */
     leg_hw_init();
 
-    /* ---- 初始化目标: 2006→高400, 灵足→0° 同时开始 ---- */
-    lift_tgt_red  = (float)LIFT_RED_POS2;   /* 高400 */
-    lift_tgt_blue = (float)LIFT_BLUE_POS2;
+    /* ---- 初始化目标: 2006→高600, 灵足→0° 同时开始 ---- */
+    lift_tgt_red  = (float)LIFT_RED_POS3;   /* 高600 */
+    lift_tgt_blue = (float)LIFT_BLUE_POS3;
     lift_set_target(0, lift_tgt_red);
     lift_set_target(1, lift_tgt_blue);
 
@@ -150,14 +151,6 @@ void leg_task(void *argument)
 
         /* 4. ESC 电调控制 */
         esc_update();
-
-        /* 5. 收到KFS后，刷新抬升高度 */
-        if (arm_init == 1) {
-            lift_tgt_red  = get_lift_pos(&target_red,  LIFT_RED_POS0,  LIFT_RED_POS1,  LIFT_RED_POS2,  LIFT_RED_POS3);
-            lift_tgt_blue = get_lift_pos(&target_blue, LIFT_BLUE_POS0, LIFT_BLUE_POS1, LIFT_BLUE_POS2, LIFT_BLUE_POS3);
-            lift_set_target(0, lift_tgt_red);
-            lift_set_target(1, lift_tgt_blue);
-        }
 
         lift_update_debug();
         osDelay(2);

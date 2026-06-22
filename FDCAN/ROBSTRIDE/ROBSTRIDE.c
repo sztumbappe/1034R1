@@ -618,6 +618,19 @@ static inline float robstride_clampf(float x, float lo, float hi)
 
 float virtual_angle[2] = {0.0f, 0.0f};
 
+/* 文件作用域变量 (支持 robstride_goto_reset 重置) */
+float rob_stable_target[2] = {0.0f, 0.0f};
+uint8_t rob_goto_init[2] = {0, 0};
+uint8_t rob_ka_init[2] = {0, 0};
+
+void robstride_goto_reset(void)
+{
+    rob_goto_init[0] = 0; rob_goto_init[1] = 0;
+    rob_stable_target[0] = 0.0f; rob_stable_target[1] = 0.0f;
+    rob_ka_init[0] = 0; rob_ka_init[1] = 0;
+    virtual_angle[0] = 0.0f; virtual_angle[1] = 0.0f;
+}
+
 /**
  * robstride_keepalive() — 仅初始化+保持通信，不做运动
  * 2006未到位时调用，完成 initialized 初始化，保持灵足不超时
@@ -628,10 +641,9 @@ void robstride_keepalive(uint8_t motor_idx)
     uint8_t can_id = motor_idx + 1;
 
     /* 首次调用：记录当前角度作为初始值 */
-    static uint8_t ka_init[2] = {0, 0};
-    if (!ka_init[motor_idx]) {
+    if (!rob_ka_init[motor_idx]) {
         virtual_angle[motor_idx] = Pos_Info[can_id].Angle;
-        ka_init[motor_idx] = 1;
+        rob_ka_init[motor_idx] = 1;
     }
 
     /* 用当前角度发 MIT 指令，保持通信+原地不动 */
@@ -658,19 +670,18 @@ void robstride_goto_target(float tgt, uint8_t motor_idx)
     const float Kp              = 100.0f;
     const float Kd              = 4.5f;
 
-    static float stable_target[2] = {0.0f, 0.0f};
-    static uint8_t initialized[2] = {0, 0};
+    /* 注意: rob_stable_target/rob_goto_init 定义在文件顶部，支持 reset */
 
     /* 索引保护 */
     if (motor_idx > 1) return;
     uint8_t can_id = motor_idx + 1;  /* motor_idx=0→CAN ID=1(粉色臂), motor_idx=1→CAN ID=2(蓝色臂) */
 
     /* 首次初始化：直接用目标角度（先初始化，再检查数据） */
-    if (!initialized[motor_idx])
+    if (!rob_goto_init[motor_idx])
     {
-        stable_target[motor_idx] = tgt;
+        rob_stable_target[motor_idx] = tgt;
         virtual_angle[motor_idx] = Pos_Info[can_id].Angle;
-        initialized[motor_idx] = 1;
+        rob_goto_init[motor_idx] = 1;
     }
 
     /* CAN 数据有效性检查：初始化后再检查 */
@@ -682,18 +693,18 @@ void robstride_goto_target(float tgt, uint8_t motor_idx)
     }
 
     /* 目标平滑更新 */
-    float error_to_target = tgt - stable_target[motor_idx];
+    float error_to_target = tgt - rob_stable_target[motor_idx];
     if (fabsf(error_to_target) < 0.01f)
     {
-        stable_target[motor_idx] = tgt;
+        rob_stable_target[motor_idx] = tgt;
     }
     else
     {
-        stable_target[motor_idx] += STABLE_ALPHA * error_to_target;
+        rob_stable_target[motor_idx] += STABLE_ALPHA * error_to_target;
     }
 
     /* 限速插值 + 减速区 */
-    float delta_total = stable_target[motor_idx] - virtual_angle[motor_idx];
+    float delta_total = rob_stable_target[motor_idx] - virtual_angle[motor_idx];
     float abs_rem = fabsf(delta_total);
     float max_step = MAX_WRIST_SPEED * DT;
 
@@ -720,7 +731,7 @@ void robstride_goto_target(float tgt, uint8_t motor_idx)
     }
     else
     {
-        virtual_angle[motor_idx] = stable_target[motor_idx];
+        virtual_angle[motor_idx] = rob_stable_target[motor_idx];
     }
 
     /* 速度前馈 */

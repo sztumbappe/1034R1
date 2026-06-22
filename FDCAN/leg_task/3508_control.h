@@ -93,6 +93,9 @@ extern int32_t lift_debug_offset[2];    /* 相对上电位置的编码器偏移 
 /* 2006调试偏移更新 (主循环调用) */
 void lift_update_debug(void);
 
+/* 检测2006是否到达当前目标位置 (复用Motor_SetPositionProfile的deadband) */
+uint8_t lift_arrived(uint8_t idx);
+
 /* 位置梯形速度规划 */
 float Motor_SetPositionProfile(motor_control *MOTOR, MotorRun *motor,
                                float target_pos, float max_spd,

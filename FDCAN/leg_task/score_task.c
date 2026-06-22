@@ -20,14 +20,19 @@ extern volatile float arm_close[2];
 /* ======================== 状态枚举 ======================== */
 typedef enum {
     SCORE_IDLE,
-    SCORE_PICKUP_STEP1, /* 取料: relay_pickup_kfs (含200ms阻塞) */
-    SCORE_PICKUP_STEP2, /* 取料: 抬升到600, 等到位 */
-    SCORE_STORE_STEP1,  /* 存料: 灵足收到后面 */
+    SCORE_PICKUP_DESCEND,  /* 取料: 降到KFS高度 */
+    SCORE_PICKUP_STEP1,    /* 取料: relay_pickup_kfs (含200ms阻塞) */
+    SCORE_STORE_RAISE,     /* 存料: 升到600 */
+    SCORE_STORE_RETRACT,   /* 存料: 灵足收到后面 */
 } score_state_t;
 
 /* ======================== 内部变量 ======================== */
 score_state_t state[2] = {SCORE_IDLE, SCORE_IDLE};
 static uint32_t enter_tick[2] = {0, 0};
+
+/* ======================== KFS目标高度存储 ======================== */
+static float kfs_height_red = 4;   /* RCKFS存的左臂高度, 默认600 */
+static float kfs_height_blue = 4;  /* RCKFS存的右臂高度, 默认600 */
 
 /* ======================== 电磁阀状态跟踪 (用于SWITCH切换) ======================== */
 static uint8_t vacuum_state[2] = {1, 1}; /* 上电后两个电磁阀都通电(1=开) */
@@ -59,29 +64,41 @@ static void arm_sm_update(uint8_t idx)
     switch (state[idx]) {
 
     /* ---------- 取料流程 ---------- */
+    case SCORE_PICKUP_DESCEND:
+        /* 降到KFS高度 */
+        if (idx == 0) {
+            target_red = kfs_height_red;
+        } else {
+            target_blue = kfs_height_blue;
+        }
+        /* 到位检测 或 2秒超时 */
+        if (lift_arrived(idx) || (now - enter_tick[idx] >= 2000)) {
+            state[idx] = SCORE_PICKUP_STEP1;
+        }
+        break;
+
     case SCORE_PICKUP_STEP1:
         /* relay_pickup_kfs: 关阀+气缸伸出200ms+缩回 (阻塞) */
         relay_pickup_kfs(idx + 1);
-        state[idx] = SCORE_PICKUP_STEP2;
-        enter_tick[idx] = now;
+        state[idx] = SCORE_IDLE;
         break;
 
-    case SCORE_PICKUP_STEP2:
-        /* 抬升到600 */
+    /* ---------- 存料流程 ---------- */
+    case SCORE_STORE_RAISE:
+        /* 先升到600 */
         if (idx == 0) {
             target_red = 4;
         } else {
             target_blue = 4;
         }
-        /* 等2秒让2006到达 */
-        if (now - enter_tick[idx] >= 2000) {
-            state[idx] = SCORE_IDLE;
+        /* 到位检测 或 2秒超时 */
+        if (lift_arrived(idx) || (now - enter_tick[idx] >= 2000)) {
+            state[idx] = SCORE_STORE_RETRACT;
         }
         break;
 
-    /* ---------- 存料流程 ---------- */
-    case SCORE_STORE_STEP1:
-        /* 灵足收到后面 */
+    case SCORE_STORE_RETRACT:
+        /* 到600后灵足收到后面 */
         arm_close[idx] = 1;
         state[idx] = SCORE_IDLE;
         break;
@@ -113,23 +130,25 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
     /* ---- 半自动: 取料/存料 ---- */
     case RC_CMD_ATAKE:
         if (cmd->param1 == 0) {
-            /* ATAKE00: 左臂取料 */
-            state[0] = SCORE_PICKUP_STEP1;
+            /* ATAKE00: 左臂取料 → 先降到KFS高度 */
+            state[0] = SCORE_PICKUP_DESCEND;
             enter_tick[0] = osKernelGetTickCount();
         } else {
-            /* ATAKE01: 左臂存料 */
-            state[0] = SCORE_STORE_STEP1;
+            /* ATAKE01: 左臂存料 → 先升到600再收回 */
+            state[0] = SCORE_STORE_RAISE;
+            enter_tick[0] = osKernelGetTickCount();
         }
         break;
 
     case RC_CMD_BTAKE:
         if (cmd->param1 == 0) {
-            /* BTAKE00: 右臂取料 */
-            state[1] = SCORE_PICKUP_STEP1;
+            /* BTAKE00: 右臂取料 → 先降到KFS高度 */
+            state[1] = SCORE_PICKUP_DESCEND;
             enter_tick[1] = osKernelGetTickCount();
         } else {
-            /* BTAKE01: 右臂存料 */
-            state[1] = SCORE_STORE_STEP1;
+            /* BTAKE01: 右臂存料 → 先升到600再收回 */
+            state[1] = SCORE_STORE_RAISE;
+            enter_tick[1] = osKernelGetTickCount();
         }
         break;
 
@@ -137,10 +156,10 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
     case RC_CMD_KFS:
         arm_init = 1;  /* 收到KFS指令时触发启动 */
         if (cmd->param1 <= 9) {
-            target_red = (float)protocol_to_height[cmd->param1];
+            kfs_height_red = (float)protocol_to_height[cmd->param1];
         }
         if (cmd->param2 <= 9) {
-            target_blue = (float)protocol_to_height[cmd->param2];
+            kfs_height_blue = (float)protocol_to_height[cmd->param2];
         }
         break;
 

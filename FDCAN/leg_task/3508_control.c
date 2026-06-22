@@ -267,6 +267,16 @@ void lift_goto_target(void)
                0, 0);
 }
 
+/* ======================== 到位检测 ======================== */
+
+uint8_t lift_arrived(uint8_t idx)
+{
+    if (idx > 1) return 0;
+    float current = GetTotalPosition(&control_3508_classic[idx]);
+    float dist = fabsf(lift_target[idx] - current);
+    return (dist < 10.0f) ? 1 : 0;
+}
+
 /* ======================== 气缸控制 ======================== */
 
 void cylinder_open(void)
