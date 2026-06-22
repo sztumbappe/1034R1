@@ -76,6 +76,16 @@ static float get_lift_pos(volatile float *target, float pos0, float pos1, float 
  */
 static void arm_gimbal_update(uint8_t idx)
 {
+    /* R2预备上R1模式: 强制特殊角度, 跳过正常逻辑 */
+    extern uint8_t r2ready_mode;
+    if (r2ready_mode) {
+        if (idx == 0)
+            robstride_goto_target(0.0f, 0);     /* 1号灵足 → 0° */
+        else
+            robstride_goto_target(-1.57f, 1);   /* 2号灵足 → -90° */
+        return;
+    }
+
     if (arm_init == 1) {
         /* KFS已收到: 正常运动控制 */
         float target_angle;
@@ -92,8 +102,8 @@ static void arm_gimbal_update(uint8_t idx)
         }
         robstride_goto_target(target_angle, idx);
     } else {
-        /* KFS未收到: 灵足保持0° */
-        robstride_goto_target(0.0f, idx);
+        /* KFS未收到: 低增益平滑归零自检 */
+        robstride_goto_init(0.0f, idx);
     }
 }
 

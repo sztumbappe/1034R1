@@ -24,6 +24,8 @@ typedef enum {
     SCORE_PICKUP_STEP1,    /* 取料: relay_pickup_kfs (含200ms阻塞) */
     SCORE_STORE_RAISE,     /* 存料: 升到600 */
     SCORE_STORE_RETRACT,   /* 存料: 灵足收到后面 */
+    SCORE_OUTLAY_WAIT_HEIGHT, /* 放料: 升到400 */
+    SCORE_OUTLAY_EXTEND,      /* 放料: 灵足伸出+保持吸附 */
 } score_state_t;
 
 /* ======================== 内部变量 ======================== */
@@ -36,6 +38,9 @@ static float kfs_height_blue = 4;  /* RCKFS存的右臂高度, 默认600 */
 
 /* ======================== 电磁阀状态跟踪 (用于SWITCH切换) ======================== */
 static uint8_t vacuum_state[2] = {1, 1}; /* 上电后两个电磁阀都通电(1=开) */
+
+/* ======================== R2预备模式标志 ======================== */
+uint8_t r2ready_mode = 0;  /* 1=R2预备模式, 由R2READY指令进入, 收到其他指令自动退出 */
 
 /* ======================== 协议值(0~9)→高度映射 ======================== */
 /* 协议值: 0→实际1, 1→2, 2→3, 3→4, 4→6, 5→7, 6→9, 7→10, 8→11, 9→12 */
@@ -103,6 +108,26 @@ static void arm_sm_update(uint8_t idx)
         state[idx] = SCORE_IDLE;
         break;
 
+    /* ---------- 放料流程 ---------- */
+    case SCORE_OUTLAY_WAIT_HEIGHT:
+        /* 强制升到400 */
+        if (idx == 0) {
+            target_red = 3;
+        } else {
+            target_blue = 3;
+        }
+        /* 到位检测 或 2秒超时 */
+        if (lift_arrived(idx) || (now - enter_tick[idx] >= 2000)) {
+            state[idx] = SCORE_OUTLAY_EXTEND;
+        }
+        break;
+
+    case SCORE_OUTLAY_EXTEND:
+        /* 灵足伸出到前面, 保持吸附(不动真空阀) */
+        arm_close[idx] = 0;
+        state[idx] = SCORE_IDLE;
+        break;
+
     default:
         state[idx] = SCORE_IDLE;
         break;
@@ -125,6 +150,11 @@ static float height_to_target(uint8_t param)
 /* ======================== 指令派发 ======================== */
 static void dispatch_cmd(const rc_cmd_t *cmd)
 {
+    /* 收到任何非R2READY指令时自动退出R2预备模式 */
+    if (cmd->type != RC_CMD_R2READY) {
+        r2ready_mode = 0;
+    }
+
     switch (cmd->type) {
 
     /* ---- 半自动: 取料/存料 ---- */
@@ -238,6 +268,45 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
             raise_target_pos = 0;
             raise_control_enable = 1;
         }
+        break;
+
+    /* ---- 左臂收回 (等价ATAKE01) ---- */
+    case RC_CMD_LRECALL:
+        state[0] = SCORE_STORE_RAISE;
+        enter_tick[0] = osKernelGetTickCount();
+        break;
+
+    /* ---- 右臂收回 (等价BTAKE01) ---- */
+    case RC_CMD_RRECALL:
+        state[1] = SCORE_STORE_RAISE;
+        enter_tick[1] = osKernelGetTickCount();
+        break;
+
+    /* ---- 左臂放料准备 (前提: 灵足已展开) ---- */
+    case RC_CMD_LOUTLAY:
+        if (arm_close[0] == 0) {
+            state[0] = SCORE_OUTLAY_WAIT_HEIGHT;
+            enter_tick[0] = osKernelGetTickCount();
+        }
+        break;
+
+    /* ---- 右臂放料准备 (前提: 灵足已展开) ---- */
+    case RC_CMD_ROUTLAY:
+        if (arm_close[1] == 0) {
+            state[1] = SCORE_OUTLAY_WAIT_HEIGHT;
+            enter_tick[1] = osKernelGetTickCount();
+        }
+        break;
+
+    /* ---- R2预备姿态 ---- */
+    case RC_CMD_R2READY:
+        r2ready_mode = 1;
+        break;
+
+    /* ---- 触发1号臂放料准备: 收回+高400 ---- */
+    case RC_CMD_TRIGGER:
+        target_red = 3;    /* 高400 */
+        arm_close[0] = 1;  /* 灵足收回 */
         break;
 
     default:

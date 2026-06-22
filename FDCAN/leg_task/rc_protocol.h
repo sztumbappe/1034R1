@@ -27,6 +27,12 @@ typedef enum {
     RC_CMD_RGODOWN,         /* 右臂下降: RCRGODOWNEND */
     RC_CMD_LGODOWN,         /* 左臂下降: RCLGODOWNEND */
     RC_CMD_UPLIFT,          /* 抬升切换: RCUPLIFT0END / RCUPLIFT1END */
+    RC_CMD_LRECALL,         /* 左臂收回: RCLRECALLEND */
+    RC_CMD_RRECALL,         /* 右臂收回: RCRRECALLEND */
+    RC_CMD_LOUTLAY,         /* 左臂放料准备: RCLOUTLAYEND */
+    RC_CMD_ROUTLAY,         /* 右臂放料准备: RCROUTLAYEND */
+    RC_CMD_R2READY,         /* R2预备姿态: RCR2READYEND */
+    RC_CMD_TRIGGER,         /* 触发1号臂放料准备: RCTRIGGEREND */
 } rc_cmd_type_t;
 
 /* ======================== 指令数据结构 ======================== */

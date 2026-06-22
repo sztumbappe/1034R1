@@ -189,18 +189,22 @@ void arm_PID_INIT(void)
 }
 
 /* 等待2个2006电机通讯建立 (FDCAN3总线, 0x201和0x202) */
-/* 注: C610电调可能不报告温度(temperate始终为0), 改用ecd+speed_rpm判断是否收到数据 */
+/* 判据: 两个2006都收到过CAN反馈数据 (ecd非零说明收到了RM协议回包) */
 void di3508_r2control_Begin(void)
 {
-//    /* 等待两个电机都收到过CAN反馈数据 */
-//    while ((control_3508_classic[0].chassis_3508_motor.ecd == 0 &&
-//            control_3508_classic[0].chassis_3508_motor.speed_rpm == 0) ||
-//           (control_3508_classic[1].chassis_3508_motor.ecd == 0 &&
-//            control_3508_classic[1].chassis_3508_motor.speed_rpm == 0))
-//    {
+    uint32_t timeout = 0;
+    while (timeout < 100) {  /* 最多等1秒 (100×10ms) */
+        /* 持续发送零电流心跳, 保持通讯 */
         CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, 0, 0);
         osDelay(10);
-//    }
+        /* 判据: 两个2006都收到过CAN反馈 (ecd非零) */
+        if (control_3508_classic[0].chassis_3508_motor.ecd != 0 &&
+            control_3508_classic[1].chassis_3508_motor.ecd != 0)
+        {
+            break;
+        }
+        timeout++;
+    }
 }
 
 /* ======================== 基础控制函数 ======================== */
