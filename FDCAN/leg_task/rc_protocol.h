@@ -1,4 +1,4 @@
-#ifndef __RC_PROTOCOL_H
+﻿#ifndef __RC_PROTOCOL_H
 #define __RC_PROTOCOL_H
 
 #include "main.h"
@@ -32,6 +32,7 @@ typedef enum {
     RC_CMD_LOUTLAY,         /* 左臂放料准备: RCLOUTLAYEND */
     RC_CMD_ROUTLAY,         /* 右臂放料准备: RCROUTLAYEND */
     RC_CMD_R2READY,         /* R2预备姿态: RCR2READYEND */
+    RC_CMD_ATREADY,         /* R1进攻姿态: RCATREADYEND */
     RC_CMD_TRIGGER,         /* 触发1号臂放料准备: RCTRIGGEREND */
 } rc_cmd_type_t;
 

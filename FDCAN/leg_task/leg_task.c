@@ -1,4 +1,4 @@
-//
+﻿//
 // leg_task.c
 // 双臂独立控制: 灵足05云台(MIT) + 2006抬升(RM)
 //
@@ -76,13 +76,21 @@ static float get_lift_pos(volatile float *target, float pos0, float pos1, float 
  */
 static void arm_gimbal_update(uint8_t idx)
 {
-    /* R2预备上R1模式: 强制特殊角度, 跳过正常逻辑 */
+    /* R1进攻/ R2预备模式: 强制特殊角度, 跳过正常逻辑 */
+    extern uint8_t atready_mode;
+    if (atready_mode) {
+        if (idx == 0)
+            robstride_goto_target(0.0f, 0);     /* 1号灵足 → 0° */
+        else
+            robstride_goto_target(-3.14f, 1);   /* 2号灵足 → -180° (R1进攻) */
+        return;
+    }
     extern uint8_t r2ready_mode;
     if (r2ready_mode) {
         if (idx == 0)
             robstride_goto_target(0.0f, 0);     /* 1号灵足 → 0° */
         else
-            robstride_goto_target(-1.57f, 1);   /* 2号灵足 → -90° */
+            robstride_goto_target(-1.57f, 1);   /* 2号灵足 → -90° (R2预备) */
         return;
     }
 

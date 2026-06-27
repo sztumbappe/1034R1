@@ -1,4 +1,4 @@
-//
+﻿//
 // rc_protocol.c
 // RC 串口通信协议模块
 // 使用 USART6 DMA 接收 + 状态机解析
@@ -450,6 +450,10 @@ static void rc_parse_cmd(const char *buf, uint8_t len)
     /* ---- R2预备姿态: R2READY ---- */
     else if (match_prefix(buf, len, "R2READY") >= 0) {
         cmd.type = RC_CMD_R2READY;
+    }
+    /* ---- R1进攻姿态: ATREADY ---- */
+    else if (match_prefix(buf, len, "ATREADY") >= 0) {
+        cmd.type = RC_CMD_ATREADY;
     }
     /* ---- 触发放料准备: TRIGGER ---- */
     else if (match_prefix(buf, len, "TRIGGER") >= 0) {

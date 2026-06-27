@@ -1,4 +1,4 @@
-#include "ROBSTRIDE.H"
+﻿#include "ROBSTRIDE.H"
 #ifndef M_PI
 #define M_PI 3.14159265358979323846f
 #endif
@@ -143,28 +143,38 @@ void robstride_init()
 	Motor_Set_All.set_motor_mode = move_control_mode;
 	drw.data_read_one = data_read_1;
 	drw.data_read_one(Index_List);
-	osDelay(50);
+	osDelay(100);
 	/* 第1步: 清除电机错误 (clear_error=1) */
 	Disenable_Motor(&Robstirde_Motor_05_hfdcan, 1, ROBSTRIDE_ID_ARM1);
-	osDelay(100);
+	osDelay(200);
 	Disenable_Motor(&Robstirde_Motor_05_hfdcan, 1, ROBSTRIDE_ID_ARM2);
-	osDelay(100);
+	osDelay(200);
 
 	/* 第2步: 使能双臂灵足05电机 (运控模式/MIT模式) */
 	Enable_Motor(&Robstirde_Motor_05_hfdcan, ROBSTRIDE_ID_ARM1);
-	osDelay(50);
-	Enable_Motor(&Robstirde_Motor_05_hfdcan, ROBSTRIDE_ID_ARM2);
 	osDelay(100);
+	Enable_Motor(&Robstirde_Motor_05_hfdcan, ROBSTRIDE_ID_ARM2);
+	osDelay(200);
 
 	/* 第3步: 等待电机完成归零 (pattern == 2), 带超时保护 */
 	uint32_t timeout = 0;
+	uint32_t enable_retry = 0;
 	while ((Pos_Info[1].pattern != 2 || Pos_Info[2].pattern != 2) && timeout < 1000)
 	{
-		/* 持续发送运控指令 (空力矩), 保持通信活跃 */
 		RobStrite_Motor_05_move_control(&Robstirde_Motor_05_hfdcan, 0,
 			Pos_Info[1].Angle, 0, 0, 0, ROBSTRIDE_ID_ARM1);
 		RobStrite_Motor_05_move_control(&Robstirde_Motor_05_hfdcan, 0,
 			Pos_Info[2].Angle, 0, 0, 0, ROBSTRIDE_ID_ARM2);
+
+		enable_retry++;
+		if (enable_retry >= 25) {
+			enable_retry = 0;
+			if (Pos_Info[1].pattern != 2)
+				Enable_Motor(&Robstirde_Motor_05_hfdcan, ROBSTRIDE_ID_ARM1);
+			if (Pos_Info[2].pattern != 2)
+				Enable_Motor(&Robstirde_Motor_05_hfdcan, ROBSTRIDE_ID_ARM2);
+		}
+
 		osDelay(20);
 		timeout++;
 	}
