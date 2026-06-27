@@ -103,7 +103,9 @@ static void arm_gimbal_update(uint8_t idx)
         robstride_goto_target(target_angle, idx);
     } else {
         /* KFS未收到: 低增益平滑归零自检 */
-        robstride_goto_init(0.0f, idx);
+		float init_angle = (idx == 0) ? -0.1f : 0.1f;
+		robstride_goto_init(init_angle, idx);
+
     }
 }
 
@@ -143,10 +145,11 @@ void leg_task(void *argument)
         /* 气泵控制 */
         if (s1 > 0.5f) {
             motor_run_flag = 1;
-            relay_pickup_kfs(s1);
+            relay_pickup_kfs(s1);	
             s1 = -1;
         } else if (s1 == 0) {
-            motor_run_flag = 0;
+            motor_run_flag = 0;    
+		  relay_vacuum_on(1);  /* 真空阀1 通电 → 断真空 */
         }
 
         /* 1. 更新双臂抬升 (2006) */

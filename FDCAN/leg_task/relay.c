@@ -76,11 +76,10 @@ void relay_cylinder_retract(uint8_t arm_id)
 void relay_pickup_kfs(uint8_t arm_id)
 {
     /* 第一次调用时开启气泵，之后不再重复开启 */
-    static uint8_t pump_started = 0;
-    if (!pump_started) {
+    if (!motor_run_flag) {
         motor_run_flag = 1;
-        osDelay(200);               /* 等待气泵转起来 */
-        pump_started = 1;
+        esc_update();              /* 立即应用PWM */
+        osDelay(300);              /* 等待气泵转起来 */
     }
 
     relay_vacuum_off(arm_id);       /* 关电磁阀 → 吸 */

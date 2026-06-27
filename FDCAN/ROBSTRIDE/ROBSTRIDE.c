@@ -143,31 +143,29 @@ void robstride_init()
 	Motor_Set_All.set_motor_mode = move_control_mode;
 	drw.data_read_one = data_read_1;
 	drw.data_read_one(Index_List);
+	osDelay(50);
+	/* 第1步: 清除电机错误 (clear_error=1) */
+	Disenable_Motor(&Robstirde_Motor_05_hfdcan, 1, ROBSTRIDE_ID_ARM1);
+	osDelay(100);
+	Disenable_Motor(&Robstirde_Motor_05_hfdcan, 1, ROBSTRIDE_ID_ARM2);
 	osDelay(100);
 
-	/* 直接使能双臂灵足05电机 (运控模式/MIT模式) */
+	/* 第2步: 使能双臂灵足05电机 (运控模式/MIT模式) */
 	Enable_Motor(&Robstirde_Motor_05_hfdcan, ROBSTRIDE_ID_ARM1);
-	osDelay(100);
+	osDelay(50);
 	Enable_Motor(&Robstirde_Motor_05_hfdcan, ROBSTRIDE_ID_ARM2);
 	osDelay(100);
 
-	/* 等待: pattern==2 且 角度安全 (1号<0°, 2号>0°) */
+	/* 第3步: 等待电机完成归零 (pattern == 2), 带超时保护 */
 	uint32_t timeout = 0;
-	while (timeout < 300)  /* 最多等3秒 (300×10ms) */
+	while ((Pos_Info[1].pattern != 2 || Pos_Info[2].pattern != 2) && timeout < 1000)
 	{
-		/* 零力矩心跳, 保持通信 */
+		/* 持续发送运控指令 (空力矩), 保持通信活跃 */
 		RobStrite_Motor_05_move_control(&Robstirde_Motor_05_hfdcan, 0,
 			Pos_Info[1].Angle, 0, 0, 0, ROBSTRIDE_ID_ARM1);
 		RobStrite_Motor_05_move_control(&Robstirde_Motor_05_hfdcan, 0,
 			Pos_Info[2].Angle, 0, 0, 0, ROBSTRIDE_ID_ARM2);
-		osDelay(10);
-		/* 合并判据: pattern==2 且 角度方向正确 */
-		if (Pos_Info[1].pattern == 2 && Pos_Info[2].pattern == 2 &&
-			Pos_Info[1].Angle != 0.0f && Pos_Info[1].Angle < 0.0f &&
-			Pos_Info[2].Angle != 0.0f && Pos_Info[2].Angle > 0.0f)
-		{
-			break;
-		}
+		osDelay(20);
 		timeout++;
 	}
 
@@ -175,6 +173,44 @@ void robstride_init()
 		Pos_Info[i].is_initialized = 0;
 	}
 }
+//void robstride_init()
+//{
+//	Master_CAN_ID = 0x11;	
+//	Motor_Set_All.set_motor_mode = move_control_mode;
+//	drw.data_read_one = data_read_1;
+//	drw.data_read_one(Index_List);
+//	osDelay(100);
+
+//	/* 直接使能双臂灵足05电机 (运控模式/MIT模式) */
+//	Enable_Motor(&Robstirde_Motor_05_hfdcan, ROBSTRIDE_ID_ARM1);
+//	osDelay(100);
+//	Enable_Motor(&Robstirde_Motor_05_hfdcan, ROBSTRIDE_ID_ARM2);
+//	osDelay(100);
+
+//	/* 等待: pattern==2 且 角度安全 (1号<0°, 2号>0°) */
+//	uint32_t timeout = 0;
+//	while (timeout < 300)  /* 最多等3秒 (300×10ms) */
+//	{
+//		/* 零力矩心跳, 保持通信 */
+//		RobStrite_Motor_05_move_control(&Robstirde_Motor_05_hfdcan, 0,
+//			Pos_Info[1].Angle, 0, 0, 0, ROBSTRIDE_ID_ARM1);
+//		RobStrite_Motor_05_move_control(&Robstirde_Motor_05_hfdcan, 0,
+//			Pos_Info[2].Angle, 0, 0, 0, ROBSTRIDE_ID_ARM2);
+//		osDelay(10);
+//		/* 合并判据: pattern==2 且 角度方向正确 */
+//		if (Pos_Info[1].pattern == 2 && Pos_Info[2].pattern == 2 &&
+//			Pos_Info[1].Angle != 0.0f && Pos_Info[1].Angle < 0.0f &&
+//			Pos_Info[2].Angle != 0.0f && Pos_Info[2].Angle > 0.0f)
+//		{
+//			break;
+//		}
+//		timeout++;
+//	}
+
+//	for (int i = 0; i < 4; i++) {
+//		Pos_Info[i].is_initialized = 0;
+//	}
+//}
 
 /*******************************************************************************
 * @功能     		: 灵足回调函数
