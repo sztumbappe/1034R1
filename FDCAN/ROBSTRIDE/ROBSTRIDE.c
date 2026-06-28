@@ -1,4 +1,4 @@
-﻿#include "ROBSTRIDE.H"
+#include "ROBSTRIDE.H"
 #ifndef M_PI
 #define M_PI 3.14159265358979323846f
 #endif
@@ -146,9 +146,9 @@ void robstride_init()
 	osDelay(100);
 	/* 第1步: 清除电机错误 (clear_error=1) */
 	Disenable_Motor(&Robstirde_Motor_05_hfdcan, 1, ROBSTRIDE_ID_ARM1);
-	osDelay(200);
+	osDelay(100);
 	Disenable_Motor(&Robstirde_Motor_05_hfdcan, 1, ROBSTRIDE_ID_ARM2);
-	osDelay(200);
+	osDelay(100);
 
 	/* 第2步: 使能双臂灵足05电机 (运控模式/MIT模式) */
 	Enable_Motor(&Robstirde_Motor_05_hfdcan, ROBSTRIDE_ID_ARM1);
@@ -183,6 +183,18 @@ void robstride_init()
 		Pos_Info[i].is_initialized = 0;
 	}
 }
+
+/*******************************************************************************
+* @功能     		: 灵足24V恢复重使能 (非阻塞, 主循环调用, 不等pattern==2)
+* @参数        	: None
+* @返回值 			: void
+*******************************************************************************/
+void robstride_restart(void)
+{
+	Enable_Motor(&Robstirde_Motor_05_hfdcan, ROBSTRIDE_ID_ARM1);
+	Enable_Motor(&Robstirde_Motor_05_hfdcan, ROBSTRIDE_ID_ARM2);
+}
+
 //void robstride_init()
 //{
 //	Master_CAN_ID = 0x11;	
@@ -962,5 +974,3 @@ void robstride_goto_target(float tgt, uint8_t motor_idx)
 //                                    can_id);
 //    h++;
 //}
-
-

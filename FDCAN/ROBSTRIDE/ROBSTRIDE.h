@@ -109,6 +109,7 @@ typedef struct
 
 void fdcan_init(void);
 void robstride_init(void);
+void robstride_restart(void);
 void get_motor_05_true_angle(void);
 void Robstirde_Motor_01_rx_callback(FDCAN_HandleTypeDef *hfdcan);
 void Robstirde_Motor_02_rx_callback(FDCAN_HandleTypeDef *hfdcan);//电机信息获取

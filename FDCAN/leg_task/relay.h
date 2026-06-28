@@ -64,6 +64,12 @@ void relay_pickup_kfs(uint8_t arm_id);
  */
 void relay_release_kfs(uint8_t arm_id);
 
+/**
+ * @brief 非阻塞轮询推进 (每2ms主循环调用)
+ *        推进 relay_pickup_kfs 状态机, 替换 osDelay 避免阻塞 CAN 心跳
+ */
+void relay_pickup_poll(void);
+
 /* ======================== 调试测试函数 ======================== */
 /**
  * @brief 继电器IO口测试 (上电时调用)

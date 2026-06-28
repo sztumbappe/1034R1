@@ -1,4 +1,4 @@
-//
+﻿//
 // 3508_control.c
 // 2006电机控制 (FDCAN3, RM协议)
 //
@@ -188,12 +188,11 @@ void arm_PID_INIT(void)
     }
 }
 
-/* 等待2个2006电机通讯建立 (FDCAN3总线, 0x201和0x202) */
-/* 判据: 两个2006都收到过CAN反馈数据 (ecd非零说明收到了RM协议回包) */
+/* 等待2个2006电机通讯建立 = 等24V电源上电 (灵足和2006共用24V) */
+/* 判据: 两个2006都收到过CAN反馈 (ecd非零) */
 void di3508_r2control_Begin(void)
 {
-    uint32_t timeout = 0;
-    while (timeout < 100) {  /* 最多等1秒 (100×10ms) */
+    while (1) {  /* 死等直到24V上电 (2006数据到达) */
         /* 持续发送零电流心跳, 保持通讯 */
         CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, 0, 0);
         osDelay(10);
@@ -203,7 +202,6 @@ void di3508_r2control_Begin(void)
         {
             break;
         }
-        timeout++;
     }
 }
 

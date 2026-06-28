@@ -63,15 +63,24 @@ void relay_cylinder_retract(uint8_t arm_id)
     cylinder_set(arm_id, 0);  /* LOW → 缩回 */
 }
 
-/* ======================== KFS操作序列 ======================== */
+/* ======================== KFS取料非阻塞状态机 ======================== */
+
+typedef enum {
+    RELAY_PICKUP_IDLE = 0,
+    RELAY_PICKUP_PUMP_WAIT,    /* 等待气泵启动 (300ms) */
+    RELAY_PICKUP_ADHERE_WAIT,  /* 等待吸附稳定 (300ms) */
+} relay_pickup_state_t;
+
+static relay_pickup_state_t pickup_state = RELAY_PICKUP_IDLE;
+static uint32_t pickup_tick = 0;
+static uint8_t  pickup_arm = 0;
 
 /*
- * 吸KFS完整序列:
- *   1. 关闭电磁阀 (LOW, 断电 → 产生真空吸力)
- *   2. 气缸伸出 (HIGH, 推出吸住KFS)
- *   3. 延时200ms
- *   4. 气缸缩回 (LOW, 收回)
- * 注意: 调用方需负责先将机械臂抬升到目标高度, 吸完后抬升到600并收到后面
+ * 吸KFS完整序列 (非阻塞入口):
+ *   1. 首次调用: 启动气泵, 进入 PUMP_WAIT 状态
+ *   2. 气泵已运行时: 立刻关闭电磁阀+气缸伸出, 进入 ADHERE_WAIT 状态
+ *   3. relay_pickup_poll() 在每个主循环推进状态机
+ * 注意: 调用方需负责先将机械臂抬升到目标高度
  */
 void relay_pickup_kfs(uint8_t arm_id)
 {
@@ -79,13 +88,47 @@ void relay_pickup_kfs(uint8_t arm_id)
     if (!motor_run_flag) {
         motor_run_flag = 1;
         esc_update();              /* 立即应用PWM */
-        osDelay(300);              /* 等待气泵转起来 */
+        pickup_state = RELAY_PICKUP_PUMP_WAIT;
+        pickup_tick = osKernelGetTickCount();
+        pickup_arm = arm_id;
+        return;  /* 等 poll 里延时 300ms */
     }
 
+    /* 气泵已运行: 直接进入吸附流程 */
     relay_vacuum_off(arm_id);       /* 关电磁阀 → 吸 */
     relay_cylinder_extend(arm_id);  /* 气缸伸出 */
-    osDelay(300);                   /* 等待吸附稳定 */
-    relay_cylinder_retract(arm_id); /* 气缸缩回 */
+    pickup_state = RELAY_PICKUP_ADHERE_WAIT;
+    pickup_tick = osKernelGetTickCount();
+    pickup_arm = arm_id;
+}
+
+/*
+ * 非阻塞轮询推进 (每2ms主循环调用, 不放 osDelay)
+ */
+void relay_pickup_poll(void)
+{
+    switch (pickup_state) {
+    case RELAY_PICKUP_IDLE:
+        break;
+
+    case RELAY_PICKUP_PUMP_WAIT:
+        if (osKernelGetTickCount() - pickup_tick >= 300) {
+            /* 气泵已稳定 → 开始吸附 */
+            relay_vacuum_off(pickup_arm);
+            relay_cylinder_extend(pickup_arm);
+            pickup_state = RELAY_PICKUP_ADHERE_WAIT;
+            pickup_tick = osKernelGetTickCount();
+        }
+        break;
+
+    case RELAY_PICKUP_ADHERE_WAIT:
+        if (osKernelGetTickCount() - pickup_tick >= 300) {
+            /* 吸附完成 → 气缸缩回 */
+            relay_cylinder_retract(pickup_arm);
+            pickup_state = RELAY_PICKUP_IDLE;
+        }
+        break;
+    }
 }
 
 /*

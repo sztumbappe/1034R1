@@ -158,7 +158,7 @@
         <Ww>
           <count>0</count>
           <WinNumber>1</WinNumber>
-          <ItemText>chassis_3508_motor[2]</ItemText>
+          <ItemText>chassis_3508_motor[2],0x0A</ItemText>
         </Ww>
         <Ww>
           <count>1</count>
@@ -314,6 +314,11 @@
           <count>31</count>
           <WinNumber>1</WinNumber>
           <ItemText>raise_target_pos</ItemText>
+        </Ww>
+        <Ww>
+          <count>32</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>\\FDCAN\../leg_task/leg_task.c\s1</ItemText>
         </Ww>
       </WatchWindow1>
       <Tracepoint>

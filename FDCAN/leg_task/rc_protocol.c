@@ -9,8 +9,9 @@
 #include "usart.h"
 #include <string.h>
 
-/* ======================== DMA 接收缓冲区 ======================== */
-static uint8_t rc_dma_buf[RC_RX_DMA_SIZE];
+/* ======================== DMA 接收缓冲区 (双缓冲 ping-pong) ======================== */
+static uint8_t rc_dma_buf[2][RC_RX_DMA_SIZE];
+static uint8_t rx_buf_idx = 0;  /* 当前 DMA 正在写入的缓冲区索引 */
 
 /* ======================== RX 状态机 ======================== */
 typedef enum {
@@ -35,6 +36,9 @@ static uint8_t  wait_ack = 0;                   /* 半双工锁: 1=等待ACK */
 static uint8_t  retry_count = 0;                /* 已重试次数 */
 static uint32_t send_tick = 0;                  /* 发送时刻 (ms) */
 static char     pending_cmd[RC_CMD_MAX_LEN];    /* 待确认的指令内容 */
+static uint8_t  pending_ack = 0;                /* 延迟ACK标志: 1=需在主循环发送ACK */
+static volatile uint8_t  dma_tx_busy = 0;       /* DMA发送忙标志 */
+static uint8_t  dma_tx_buf[RC_CMD_MAX_LEN + 8]; /* DMA发送缓冲区 */
 
 /* ======================== 雷达映射表 ======================== */
 static const int8_t radar_map_table[13] =
@@ -78,10 +82,13 @@ void rc_protocol_init(void)
     wait_ack = 0;
     retry_count = 0;
     send_tick = 0;
+    pending_ack = 0;
+    dma_tx_busy = 0;
     memset(pending_cmd, 0, sizeof(pending_cmd));
 
-    /* 启动 DMA 接收 */
-    HAL_UARTEx_ReceiveToIdle_DMA(&huart6, rc_dma_buf, RC_RX_DMA_SIZE);
+    /* 启动 DMA 接收 (buf[0]) */
+    rx_buf_idx = 0;
+    HAL_UARTEx_ReceiveToIdle_DMA(&huart6, rc_dma_buf[0], RC_RX_DMA_SIZE);
     /* 禁用半传输中断 (HT), 避免过早触发回调 */
     __HAL_DMA_DISABLE_IT(huart6.hdmarx, DMA_IT_HT);
 }
@@ -166,28 +173,40 @@ int8_t rc_send_frame(const char *cmd)
  */
 void rc_tx_poll(void)
 {
+    /* ---- 处理延迟ACK发送 (保持同步, 仅7字节≈0.6ms) ---- */
+    if (pending_ack) {
+        pending_ack = 0;
+        const uint8_t ack[] = "RCOKEND";
+        HAL_UART_Transmit(&huart6, (uint8_t *)ack, 7, 50);
+    }
+
     if (!wait_ack) {
         return;  /* 无需等待 */
+    }
+
+    /* DMA 发送中, 跳过本次重试检查 (不阻塞主循环) */
+    if (dma_tx_busy) {
+        return;
     }
 
     uint32_t elapsed = HAL_GetTick() - send_tick;
 
     if (elapsed >= RC_ACK_TIMEOUT_MS) {
         if (retry_count < RC_ACK_MAX_RETRY) {
-            /* 重发 */
+            /* 重发 (DMA非阻塞) */
             retry_count++;
             send_tick = HAL_GetTick();
 
-            /* 重新拼接并发送 */
             uint16_t len = (uint16_t)strlen(pending_cmd);
-            uint8_t frame[RC_CMD_MAX_LEN + 8];
-            frame[0] = 'R';
-            frame[1] = 'C';
-            memcpy(&frame[2], pending_cmd, len);
-            frame[2 + len]     = 'E';
-            frame[2 + len + 1] = 'N';
-            frame[2 + len + 2] = 'D';
-            HAL_UART_Transmit(&huart6, frame, 2 + len + 3, 100);
+            dma_tx_buf[0] = 'R';
+            dma_tx_buf[1] = 'C';
+            memcpy(&dma_tx_buf[2], pending_cmd, len);
+            dma_tx_buf[2 + len]     = 'E';
+            dma_tx_buf[2 + len + 1] = 'N';
+            dma_tx_buf[2 + len + 2] = 'D';
+
+            dma_tx_busy = 1;
+            HAL_UART_Transmit_DMA(&huart6, dma_tx_buf, 2 + len + 3);
         } else {
             /* 超过最大重试次数, 放弃 */
             wait_ack = 0;
@@ -220,14 +239,28 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
         return;
     }
 
-    /* 将 DMA 缓冲区中的数据逐字节喂入状态机 */
-    for (uint16_t i = 0; i < Size; i++) {
-        rc_rx_feed(rc_dma_buf[i]);
-    }
-
-    /* 重新启动 DMA 接收 */
-    HAL_UARTEx_ReceiveToIdle_DMA(&huart6, rc_dma_buf, RC_RX_DMA_SIZE);
+    /* 双缓冲 ping-pong: 保存当前缓冲区索引, 立即用另一缓冲区重新武装 DMA */
+    uint8_t idx = rx_buf_idx;
+    rx_buf_idx ^= 1;  /* 切换 0↔1 */
+    HAL_UARTEx_ReceiveToIdle_DMA(&huart6, rc_dma_buf[rx_buf_idx], RC_RX_DMA_SIZE);
     __HAL_DMA_DISABLE_IT(huart6.hdmarx, DMA_IT_HT);
+
+    /* 现在安全地处理已保存缓冲区的数据 (DMA 不会覆盖它) */
+    for (uint16_t i = 0; i < Size; i++) {
+        rc_rx_feed(rc_dma_buf[idx][i]);
+    }
+}
+
+/**
+ * @brief UART DMA 发送完成回调
+ *        在 DMA 将数据全部发送到 USART 移位寄存器后触发
+ * @note  此函数为 HAL weak 函数重写
+ */
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance == USART6) {
+        dma_tx_busy = 0;
+    }
 }
 
 /* ======================== 状态机内部实现 ======================== */
@@ -329,8 +362,8 @@ static void rc_rx_process_frame(void)
         return;
     }
 
-    /* 合法指令帧, 发送 ACK */
-    rc_send_ack();
+    /* 合法指令帧, 设置延迟ACK标志 (不在中断里阻塞发送) */
+    pending_ack = 1;
 
     /* 解析指令 */
     rc_parse_cmd(cmd_buffer, cmd_len);

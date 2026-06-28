@@ -107,4 +107,11 @@ int8_t rc_radar_map(uint8_t input);
  */
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size);
 
+/**
+ * @brief UART DMA 发送完成回调 (重写 HAL weak 函数)
+ *        在 DMA 将数据全部发送到 USART 移位寄存器后触发
+ * @param huart UART 句柄
+ */
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart);
+
 #endif /* __RC_PROTOCOL_H */

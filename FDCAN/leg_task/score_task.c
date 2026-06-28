@@ -1,4 +1,4 @@
-﻿//
+//
 // score_task.c
 // 半自动指令状态机 (在 leg_task 主循环中调用)
 // 轮询 rc_has_new_cmd(), 根据 ATAKE/BTAKE 指令执行取料/存料流程
@@ -158,28 +158,28 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
 
     switch (cmd->type) {
 
-    /* ---- 半自动: 取料/存料 ---- */
+    /* ---- 半自动: 取料/存料 ---- */        //先取右臂后取左
     case RC_CMD_ATAKE:
         if (cmd->param1 == 0) {
-            /* ATAKE00: 左臂取料 → 先降到KFS高度 */
-            state[0] = SCORE_PICKUP_DESCEND;
-            enter_tick[0] = osKernelGetTickCount();
+            /* ATAKE00: 右臂取料 → 先降到KFS高度 */
+            state[1] = SCORE_PICKUP_DESCEND;
+            enter_tick[1] = osKernelGetTickCount();
         } else {
-            /* ATAKE01: 左臂存料 → 先升到600再收回 */
-            state[0] = SCORE_STORE_RAISE;
-            enter_tick[0] = osKernelGetTickCount();
+            /* ATAKE01: 右臂存料 → 先升到600再收回 */
+            state[1] = SCORE_STORE_RAISE;
+            enter_tick[1] = osKernelGetTickCount();
         }
         break;
 
     case RC_CMD_BTAKE:
         if (cmd->param1 == 0) {
-            /* BTAKE00: 右臂取料 → 先降到KFS高度 */
-            state[1] = SCORE_PICKUP_DESCEND;
-            enter_tick[1] = osKernelGetTickCount();
+            /* BTAKE00: 左臂取料 → 先降到KFS高度 */
+            state[0] = SCORE_PICKUP_DESCEND;
+            enter_tick[0] = osKernelGetTickCount();
         } else {
-            /* BTAKE01: 右臂存料 → 先升到600再收回 */
-            state[1] = SCORE_STORE_RAISE;
-            enter_tick[1] = osKernelGetTickCount();
+            /* BTAKE01: 左臂存料 → 先升到600再收回 */
+            state[0] = SCORE_STORE_RAISE;
+            enter_tick[0] = osKernelGetTickCount();
         }
         break;
 
@@ -187,10 +187,10 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
     case RC_CMD_KFS:
         arm_init = 1;  /* 收到KFS指令时触发启动 */
         if (cmd->param1 <= 9) {
-            kfs_height_red = (float)protocol_to_height[cmd->param1];
+            kfs_height_red = (float)protocol_to_height[cmd->param2];
         }
         if (cmd->param2 <= 9) {
-            kfs_height_blue = (float)protocol_to_height[cmd->param2];
+            kfs_height_blue = (float)protocol_to_height[cmd->param1];
         }
         break;
 
@@ -198,11 +198,19 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
     case RC_CMD_RKFS:
         /* 右臂高度: RKFS100/200/400/600 */
         target_blue = height_to_target(cmd->param1);
+        kfs_height_blue = target_blue;
+        arm_close[1] = 0;
+        state[1] = SCORE_PICKUP_DESCEND;
+        enter_tick[1] = osKernelGetTickCount();
         break;
 
     case RC_CMD_LKFS:
         /* 左臂高度: LKFS100/200/400/600 */
         target_red = height_to_target(cmd->param1);
+        kfs_height_red = target_red;
+        arm_close[0] = 0;
+        state[0] = SCORE_PICKUP_DESCEND;
+        enter_tick[0] = osKernelGetTickCount();
         break;
 
     case RC_CMD_RABSORB:

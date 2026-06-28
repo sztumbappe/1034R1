@@ -1,7 +1,7 @@
 #include "bsp_fdcan.h"
 #include "fdcan.h"
 #include "ROBSTRIDE.h"
-
+#include "cmsis_os2.h"
 // 电机数据接收 (与参考项目一致)
 motor_control control_3508_classic[5];
 
@@ -187,9 +187,12 @@ static void SyncCompatVars(int idx)
 	CycleNum = control_3508_classic[2].CycleNum;
 }
 
+volatile uint32_t can3_last_tick = 0;  /* CAN3最后一次收到2006数据的时刻 */
+
 // CAN3接收回调 (与参考项目Fdcan1_rx_callback一致，但使用FDCAN3)
 static void Fdcan3_rx_callback(void)
 {
+  can3_last_tick = osKernelGetTickCount();  /* 记录2006数据更新时间戳 */
 	FDCAN_RxHeaderTypeDef rx_header;
 	uint8_t rx_data[8];
 	HAL_FDCAN_GetRxMessage(&hfdcan3, FDCAN_RX_FIFO0, &rx_header, rx_data);
