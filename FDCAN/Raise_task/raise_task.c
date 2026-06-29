@@ -149,17 +149,17 @@ void PID_INIT(void)
     // 速度环PID初始化
     pid_struct_init(&pid_var1,
                     0,          // 死区
-                    8000,       // 最大输出
-                    6000,       // 积分限幅
+                    10000,       // 最大输出
+                    9000,       // 积分限幅
                     9,          // KP
                     0.3f,       // KI
                     0);         // KD
 
-    // 位置环PID初始化（max_out限制最大速度指令，防止电机转太快）
+    // 位置环PID初始化
     pid_struct_init(&pid_dic,
                     150,        // 死区
-                    6000,       // 最大输出（限制位置环最大速度指令为3000RPM）
-                    9000,       // 积分限幅
+                    10000,       // 最大输出（限制位置环最大速度指令为3000RPM）
+                    10000,       // 积分限幅
                     0.2f,       // KP
                     0,          // KI
                     0.15f);     // KD
@@ -168,9 +168,9 @@ void PID_INIT(void)
 void dj3508_r2_begin(void)
 {
     // 等待电机通讯建立（温度值非0表示通讯正常）
-    while (chassis_3508_motor[2].temperate == 0 && chassis_3508_motor[2].ecd == 0)
+    while (chassis_3508_motor[4].temperate == 0 && chassis_3508_motor[4].ecd == 0)
     {
-        CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, 0, 0);
+        CAN_CMD_RM(&hfdcan3, CAN_GIMBAL_ALL_ID, 0, 0, 0, 0);
         vTaskDelay(pdMS_TO_TICKS(10)); // FreeRTOS延时（替代HAL_Delay）
     }
 }
@@ -190,11 +190,11 @@ void di3508_r2control_init(void)
             // 限位触发，多轮制动：用速度环PID目标=0快速刹停
             for (int i = 0; i < 5; i++)
             {
-                Pidcur = pid_calculate1(&pid_var1, (float)chassis_3508_motor[2].speed_rpm, 0);
-                CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, (int)Pidcur, 0);
+                Pidcur = pid_calculate1(&pid_var1, (float)chassis_3508_motor[4].speed_rpm, 0);
+                CAN_CMD_RM(&hfdcan3, CAN_GIMBAL_ALL_ID, (int)Pidcur, 0, 0, 0);
                 vTaskDelay(pdMS_TO_TICKS(5));
             }
-            CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, 0, 0); // 彻底停止
+            CAN_CMD_RM(&hfdcan3, CAN_GIMBAL_ALL_ID, 0, 0, 0, 0); // 彻底停止
             // 记录当前位置作为零点基准
             MOTOR_STECD = total_ecd;
             speed_flag = false;
@@ -203,8 +203,8 @@ void di3508_r2control_init(void)
         else
         {
             // 限位未触发，持续下降
-            Pidcur = pid_calculate1(&pid_var1, (float)chassis_3508_motor[2].speed_rpm, RAISE_CALIB_HIGH);
-            CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, (int)Pidcur, 0);
+            Pidcur = pid_calculate1(&pid_var1, (float)chassis_3508_motor[4].speed_rpm, RAISE_CALIB_HIGH);
+            CAN_CMD_RM(&hfdcan3, CAN_GIMBAL_ALL_ID, (int)Pidcur, 0, 0, 0);
             vTaskDelay(pdMS_TO_TICKS(10));
         }
     }
@@ -222,11 +222,11 @@ void di3508_r2control(void)
         {
             for (int i = 0; i < 5; i++)
             {
-                Pidcur = pid_calculate1(&pid_var1, (float)chassis_3508_motor[2].speed_rpm, 0);
-                CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, (int)Pidcur, 0);
+                Pidcur = pid_calculate1(&pid_var1, (float)chassis_3508_motor[4].speed_rpm, 0);
+                CAN_CMD_RM(&hfdcan3, CAN_GIMBAL_ALL_ID, (int)Pidcur, 0, 0, 0);
                 vTaskDelay(pdMS_TO_TICKS(5));
             }
-            CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, 0, 0);
+            CAN_CMD_RM(&hfdcan3, CAN_GIMBAL_ALL_ID, 0, 0, 0, 0);
             MOTOR_STECD = total_ecd;
             return;
         }
@@ -234,8 +234,8 @@ void di3508_r2control(void)
 
     // 电机位置闭环控制
     Pidvar = pid_calculate1(&pid_dic, (float)total_ecd, raise_target_pos + (float)MOTOR_STECD);
-    Pidcur = pid_calculate1(&pid_var1, (float)chassis_3508_motor[2].speed_rpm, Pidvar);
-    CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, (int)Pidcur, 0);
+    Pidcur = pid_calculate1(&pid_var1, (float)chassis_3508_motor[4].speed_rpm, Pidvar);
+    CAN_CMD_RM(&hfdcan3, CAN_GIMBAL_ALL_ID, (int)Pidcur, 0, 0, 0);
 }
 
 /************************ FreeRTOS任务函数 ************************/
@@ -269,7 +269,7 @@ void Raise_task(void *argument)
         else
         {
             // 未使能时发送零电流，电机自由
-            CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, 0, 0);
+            CAN_CMD_RM(&hfdcan3, CAN_GIMBAL_ALL_ID, 0, 0, 0, 0);
         }
 
         osDelay(10);

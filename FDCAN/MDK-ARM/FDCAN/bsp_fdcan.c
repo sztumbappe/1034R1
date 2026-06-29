@@ -183,8 +183,8 @@ static void SyncCompatVars(int idx)
 	chassis_3508_motor[idx].speed_rpm = m->speed_rpm;
 	chassis_3508_motor[idx].given_current = m->given_current;
 	chassis_3508_motor[idx].temperate = m->temperate;
-	total_ecd = control_3508_classic[2].total_ecd;
-	CycleNum = control_3508_classic[2].CycleNum;
+	total_ecd = control_3508_classic[4].total_ecd;
+	CycleNum = control_3508_classic[4].CycleNum;
 }
 
 volatile uint32_t can3_last_tick = 0;  /* CAN3最后一次收到2006数据的时刻 */

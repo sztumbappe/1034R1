@@ -165,7 +165,7 @@ static uint8_t power_supervise(void)
 }
 
 /* ======================== 主任务 ======================== */
-float s1, first;
+float s1;
 float rc = 0;
 
 void leg_task(void *argument)
@@ -186,7 +186,7 @@ void leg_task(void *argument)
     {
         if (power_supervise()) continue;  /* 24V丢失中, 跳过控制 */
 
-        /* 气泵控制 */
+        /* 气泵控制 */ 
         if (s1 > 0.5f) {
             relay_pickup_kfs(s1);	
             s1 = -1;
@@ -195,11 +195,11 @@ void leg_task(void *argument)
 		        relay_vacuum_on(1);  /* 真空阀1 通电 → 断真空 */
         }
 
-        /* 1. 处理RC指令 (得分状态机)
-        score_update();
-
-        /* 2. 更新双臂抬升 (2006) */
+        /* 1. 更新双臂抬升 (2006) */
         lift_control_update();
+
+        // 2. 处理RC指令 (得分状态机)
+        score_update();
 
         /* 3. 更新灵足 (收到KFS前→0°, 收到后→正常角度) */
         /* pattern巡查: 未就绪时原地不动, 就绪后切回正常控制 */
