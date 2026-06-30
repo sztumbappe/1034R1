@@ -62,7 +62,7 @@ static const int8_t radar_map_table[13] =
 static void     rc_rx_feed(uint8_t byte);
 static void     rc_rx_process_frame(void);
 static void     rc_parse_cmd(const char *buf, uint8_t len);
-static uint8_t  parse_uint8(const char *buf, uint8_t len);
+static uint16_t parse_uint16(const char *buf, uint8_t len);
 static int8_t   match_prefix(const char *buf, uint8_t len, const char *prefix);
 
 /* ======================== 公共接口实现 ======================== */
@@ -403,29 +403,29 @@ static void rc_parse_cmd(const char *buf, uint8_t len)
         }
         if (comma_pos > 3 && comma_pos < len - 1) {
             cmd.type = RC_CMD_KFS;
-            cmd.param1 = parse_uint8(buf + 3, comma_pos - 3);
-            cmd.param2 = parse_uint8(buf + comma_pos + 1, len - comma_pos - 1);
+            cmd.param1 = parse_uint16(buf + 3, comma_pos - 3);
+            cmd.param2 = parse_uint16(buf + comma_pos + 1, len - comma_pos - 1);
         }
     }
     /* ---- 左臂 Take: ATAKE00 / ATAKE01 ---- */
     else if (match_prefix(buf, len, "ATAKE") >= 0) {
         cmd.type = RC_CMD_ATAKE;
-        cmd.param1 = parse_uint8(buf + 5, len - 5);
+        cmd.param1 = parse_uint16(buf + 5, len - 5);
     }
     /* ---- 右臂 Take: BTAKE00 / BTAKE01 ---- */
     else if (match_prefix(buf, len, "BTAKE") >= 0) {
         cmd.type = RC_CMD_BTAKE;
-        cmd.param1 = parse_uint8(buf + 5, len - 5);
+        cmd.param1 = parse_uint16(buf + 5, len - 5);
     }
     /* ---- 右臂高度: RKFS100 / 200 / 400 / 600 ---- */
     else if (match_prefix(buf, len, "RKFS") >= 0) {
         cmd.type = RC_CMD_RKFS;
-        cmd.param1 = parse_uint8(buf + 4, len - 4);
+        cmd.param1 = parse_uint16(buf + 4, len - 4);
     }
     /* ---- 左臂高度: LKFS100 / 200 / 400 / 600 ---- */
     else if (match_prefix(buf, len, "LKFS") >= 0) {
         cmd.type = RC_CMD_LKFS;
-        cmd.param1 = parse_uint8(buf + 4, len - 4);
+        cmd.param1 = parse_uint16(buf + 4, len - 4);
     }
     /* ---- 右臂吸收: RABSORB ---- */
     else if (match_prefix(buf, len, "RABSORB") >= 0) {
@@ -462,7 +462,7 @@ static void rc_parse_cmd(const char *buf, uint8_t len)
     /* ---- 抬升切换: UPLIFT0 / UPLIFT1 ---- */
     else if (match_prefix(buf, len, "UPLIFT") >= 0) {
         cmd.type = RC_CMD_UPLIFT;
-        cmd.param1 = parse_uint8(buf + 6, len - 6);
+        cmd.param1 = parse_uint16(buf + 6, len - 6);
     }
     /* ---- 左臂收回: LRECALL ---- */
     else if (match_prefix(buf, len, "LRECALL") >= 0) {
@@ -507,12 +507,12 @@ static void rc_parse_cmd(const char *buf, uint8_t len)
  * @param len  数字字符串长度
  * @return 解析结果
  */
-static uint8_t parse_uint8(const char *buf, uint8_t len)
+static uint16_t parse_uint16(const char *buf, uint8_t len)
 {
-    uint8_t val = 0;
+    uint16_t val = 0;
     for (uint8_t i = 0; i < len; i++) {
         if (buf[i] >= '0' && buf[i] <= '9') {
-            val = val * 10 + (uint8_t)(buf[i] - '0');
+            val = val * 10 + (uint16_t)(buf[i] - '0');
         } else {
             break;  /* 遇到非数字字符停止 */
         }

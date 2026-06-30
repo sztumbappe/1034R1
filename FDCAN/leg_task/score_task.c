@@ -23,16 +23,16 @@ extern Motor_Pos_RobStrite_Info Pos_Info[4];
 /* ======================== 状态枚举 ======================== */
 typedef enum {
     SCORE_IDLE,
-    SCORE_PICKUP_DESCEND,  /* 取料: 降到KFS高度 */
-    SCORE_PICKUP_STEP1,    /* 取料: relay_pickup_kfs (含200ms阻塞) */
-    SCORE_STORE_RAISE,     /* 存料: 升到600 */
-    SCORE_STORE_RETRACT,   /* 存料: 灵足收到后面 */
-    SCORE_OUTLAY_WAIT_HEIGHT, /* 放料: 升到400 */
-    SCORE_OUTLAY_EXTEND,      /* 放料: 灵足伸出+保持吸附 */
+    SCORE_PICKUP_DESCEND,      /* 取料: 降到KFS高度 */
+    SCORE_PICKUP_STEP1,        /* 取料: relay_pickup_kfs (含200ms阻塞) */
+    SCORE_STORE_RAISE,         /* 存料: 升到600 */
+    SCORE_STORE_RETRACT,       /* 存料: 灵足收到后面 */
+    SCORE_OUTLAY_WAIT_HEIGHT,  /* 放料: 升600 + 灵足展开, 等两路到位 */
+    SCORE_OUTLAY_EXTEND,       /* 放料: 气缸伸出, 保持吸附 */
     /* ---- 新增 ---- */
-    SCORE_ABSORB_WAIT_BOTH,   /* 取料: 降100 + 灵足展开, 等两路到位 */
-    SCORE_ABSORB_DO,          /* 取料: 执行吸取 */
-    SCORE_SWITCH_OPEN,        /* 放料: 开阀300ms后收气缸 */
+    SCORE_ABSORB_WAIT_BOTH,    /* 取料: 降100 + 灵足展开, 等两路到位 */
+    SCORE_ABSORB_DO,           /* 取料: 执行吸取 */
+    SCORE_SWITCH_OPEN,         /* 放料: 开阀300ms后收气缸 */
 } score_state_t;
 
 /* ======================== 内部变量 ======================== */
@@ -44,7 +44,7 @@ static float kfs_height_red = 4;   /* RCKFS存的左臂高度, 默认600 */
 static float kfs_height_blue = 4;  /* RCKFS存的右臂高度, 默认600 */
 
 /* ======================== 灵足到位判断 (CAN位置反馈) ======================== */
-#define LEG_ARRIVED_THRESHOLD 0.05f  /* ~3° 容差 */
+#define LEG_ARRIVED_THRESHOLD 0.05f  /* ~2.9° 容差 */
 
 static uint8_t leg_arrived(uint8_t idx)
 {
@@ -92,6 +92,13 @@ static void arm_sm_update(uint8_t idx)
         } else {
             target_blue = kfs_height_blue;
         }
+        /* 首帧+20ms跳过，等 lift_control_update 刷新 lift_target */
+        if (enter_tick[idx] == 0) {
+            enter_tick[idx] = now;
+        }
+        if (now - enter_tick[idx] < 20) {
+            break;
+        }
         /* 到位检测 或 2秒超时 */
         if ((lift_arrived(idx) && leg_arrived(idx)) || (now - enter_tick[idx] >= 2000)) {
             state[idx] = SCORE_PICKUP_STEP1;
@@ -113,6 +120,13 @@ static void arm_sm_update(uint8_t idx)
             target_blue = 1;
         }
         arm_close[idx] = 0;
+        /* 首帧+20ms跳过，等 lift_control_update 刷新 lift_target */
+        if (enter_tick[idx] == 0) {
+            enter_tick[idx] = now;
+        }
+        if (now - enter_tick[idx] < 20) {
+            break;
+        }
         /* 两路都到位 或 3秒超时 */
         if ((lift_arrived(idx) && leg_arrived(idx)) || (now - enter_tick[idx] >= 3000)) {
             state[idx] = SCORE_ABSORB_DO;
@@ -132,6 +146,13 @@ static void arm_sm_update(uint8_t idx)
         } else {
             target_blue = 4;
         }
+        /* 首帧+20ms跳过，等 lift_control_update 刷新 lift_target */
+        if (enter_tick[idx] == 0) {
+            enter_tick[idx] = now;
+        }
+        if (now - enter_tick[idx] < 20) {
+            break;
+        }
         /* 到位检测 或 2秒超时 */
         if (lift_arrived(idx) || (now - enter_tick[idx] >= 2000)) {
             state[idx] = SCORE_STORE_RETRACT;
@@ -146,13 +167,20 @@ static void arm_sm_update(uint8_t idx)
 
     /* ---------- 放料流程 ---------- */
     case SCORE_OUTLAY_WAIT_HEIGHT:
-        /* 升到400 + 灵足展开 同步进行 */
+        /* 升到600 + 灵足展开 同步进行 */
         if (idx == 0) {
-            target_red = 3;
+            target_red = 4;
         } else {
-            target_blue = 3;
+            target_blue = 4;
         }
         arm_close[idx] = 0;
+        /* 首帧+20ms跳过，等 lift_control_update 刷新 lift_target */
+        if (enter_tick[idx] == 0) {
+            enter_tick[idx] = now;
+        }
+        if (now - enter_tick[idx] < 20) {
+            break;
+        }
         /* 两路都到位 或 3秒超时 */
         if ((lift_arrived(idx) && leg_arrived(idx)) || (now - enter_tick[idx] >= 3000)) {
             state[idx] = SCORE_OUTLAY_EXTEND;
@@ -167,8 +195,15 @@ static void arm_sm_update(uint8_t idx)
 
     /* ---------- 放料切换 (SWITCH) ---------- */
     case SCORE_SWITCH_OPEN:
-        /* 开电磁阀300ms后收气缸 */
-        if (now - enter_tick[idx] >= 300) {
+        /* 开电磁阀500ms后收气缸 */
+        /* 首帧+20ms跳过，等 dispatch 本帧的 relay_vacuum_on 生效 */
+        if (enter_tick[idx] == 0) {
+            enter_tick[idx] = now;
+        }
+        if (now - enter_tick[idx] < 20) {
+            break;
+        }
+        if (now - enter_tick[idx] >= 500) {
             relay_cylinder_retract(idx + 1);
             state[idx] = SCORE_IDLE;
         }
@@ -182,7 +217,7 @@ static void arm_sm_update(uint8_t idx)
 
 /* ======================== 指令→高度转换 ======================== */
 /* RKFS/LKFS 参数: 100=1, 200=2, 400=3, 600=4 */
-static float height_to_target(uint8_t param)
+static float height_to_target(uint16_t param)
 {
     switch (param) {
         case 100: return 1.0f;
@@ -208,11 +243,11 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
     //     if (cmd->param1 == 0) {
     //         /* ATAKE00: 右臂取料 → 先降到KFS高度 */
     //         state[1] = SCORE_PICKUP_DESCEND;
-    //         enter_tick[1] = osKernelGetTickCount();
+    //         enter_tick[1] = 0;
     //     } else {
     //         /* ATAKE01: 右臂存料 → 先升到600再收回 */
     //         state[1] = SCORE_STORE_RAISE;
-    //         enter_tick[1] = osKernelGetTickCount();
+    //         enter_tick[1] = 0;
     //     }
     //     break;
 
@@ -220,11 +255,11 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
     //     if (cmd->param1 == 0) {
     //         /* BTAKE00: 左臂取料 → 先降到KFS高度 */
     //         state[0] = SCORE_PICKUP_DESCEND;
-    //         enter_tick[0] = osKernelGetTickCount();
+    //         enter_tick[0] = 0;
     //     } else {
     //         /* BTAKE01: 左臂存料 → 先升到600再收回 */
     //         state[0] = SCORE_STORE_RAISE;
-    //         enter_tick[0] = osKernelGetTickCount();
+    //         enter_tick[0] = 0;
     //     }
     //     break;
 
@@ -243,11 +278,11 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
         if (cmd->param1 == 0) {
             /* ATAKE00: 左臂取料 → 先降到KFS高度 */
             state[0] = SCORE_PICKUP_DESCEND;
-            enter_tick[0] = osKernelGetTickCount();
+            enter_tick[0] = 0;
         } else {
             /* ATAKE01: 左臂存料 → 先升到600再收回 */
             state[0] = SCORE_STORE_RAISE;
-            enter_tick[0] = osKernelGetTickCount();
+            enter_tick[0] = 0;
         }
         break;
 
@@ -255,11 +290,11 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
         if (cmd->param1 == 0) {
             /* BTAKE00: 右臂取料 → 先降到KFS高度 */
             state[1] = SCORE_PICKUP_DESCEND;
-            enter_tick[1] = osKernelGetTickCount();
+            enter_tick[1] = 0;
         } else {
             /* BTAKE01: 右臂存料 → 先升到600再收回 */
             state[1] = SCORE_STORE_RAISE;
-            enter_tick[1] = osKernelGetTickCount();
+            enter_tick[1] = 0;
         }
         break;
 
@@ -281,7 +316,7 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
         kfs_height_blue = target_blue;
         arm_close[1] = 0;
         state[1] = SCORE_PICKUP_DESCEND;
-        enter_tick[1] = osKernelGetTickCount();
+        enter_tick[1] = 0;
         break;
 
     case RC_CMD_LKFS:
@@ -290,19 +325,19 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
         kfs_height_red = target_red;
         arm_close[0] = 0;
         state[0] = SCORE_PICKUP_DESCEND;
-        enter_tick[0] = osKernelGetTickCount();
+        enter_tick[0] = 0;
         break;
 
     case RC_CMD_RABSORB:
         /* 右臂吸取：降100 + 灵足展开, 等两路到位后吸 */
         state[1] = SCORE_ABSORB_WAIT_BOTH;
-        enter_tick[1] = osKernelGetTickCount();
+        enter_tick[1] = 0;
         break;
 
     case RC_CMD_LABSORB:
         /* 左臂吸取：降100 + 灵足展开, 等两路到位后吸 */
         state[0] = SCORE_ABSORB_WAIT_BOTH;
-        enter_tick[0] = osKernelGetTickCount();
+        enter_tick[0] = 0;
         break;
 
 
@@ -311,37 +346,37 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
         /* 右臂开电磁阀 → 300ms后收气缸 */
         relay_vacuum_on(2);
         state[1] = SCORE_SWITCH_OPEN;
-        enter_tick[1] = osKernelGetTickCount();
+        enter_tick[1] = 0;
         break;
 
     case RC_CMD_LSWITCH:
         /* 左臂开电磁阀 → 300ms后收气缸 */
         relay_vacuum_on(1);
         state[0] = SCORE_SWITCH_OPEN;
-        enter_tick[0] = osKernelGetTickCount();
+        enter_tick[0] = 0;
         break;
 
     case RC_CMD_LRECALL:
         state[0] = SCORE_STORE_RAISE;
-        enter_tick[0] = osKernelGetTickCount();
+        enter_tick[0] = 0;
         break;
 
     /* ---- 右臂收回 (等价BTAKE01) ---- */
     case RC_CMD_RRECALL:
         state[1] = SCORE_STORE_RAISE;
-        enter_tick[1] = osKernelGetTickCount();
+        enter_tick[1] = 0;
         break;
 
     /* ---- 左臂放料准备 ---- */
     case RC_CMD_LOUTLAY:
         state[0] = SCORE_OUTLAY_WAIT_HEIGHT;
-        enter_tick[0] = osKernelGetTickCount();
+        enter_tick[0] = 0;
         break;
 
     /* ---- 右臂放料准备 ---- */
     case RC_CMD_ROUTLAY:
         state[1] = SCORE_OUTLAY_WAIT_HEIGHT;
-        enter_tick[1] = osKernelGetTickCount();
+        enter_tick[1] = 0;
         break;
 
     /* ---- R2预备姿态 ---- */

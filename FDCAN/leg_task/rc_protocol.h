@@ -39,7 +39,7 @@ typedef enum {
 /* ======================== 指令数据结构 ======================== */
 typedef struct {
     rc_cmd_type_t type;     /* 指令类型 */
-    uint8_t       param1;   /* 参数1: zone / take动作 / height / uplift值 */
+    uint16_t      param1;   /* 参数1: zone / take动作 / height / uplift值 */
     uint8_t       param2;   /* 参数2: level (仅 KFS 使用) */
 } rc_cmd_t;
 

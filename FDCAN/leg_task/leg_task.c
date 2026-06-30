@@ -29,7 +29,8 @@ volatile float target_blue = 4;   /* 2号臂抬升: 1=高100, 2=高200, 3=高400
 static float s;
 volatile float arm_init;
 
-/* ======================== 外部变量 ======================== */
+/* ======================== 外部变量 ========·
+================ */
 extern uint8_t raise_control_enable;
 extern float raise_target_pos;
 extern Motor_Pos_RobStrite_Info Pos_Info[4];
