@@ -1,4 +1,4 @@
-﻿//
+//
 // 3508_control.c
 // 2006电机控制 (FDCAN3, RM协议)
 //
@@ -142,7 +142,7 @@ float Motor_SetPositionProfile(motor_control *MOTOR, MotorRun *motor,
     float dir = (pos_error > 0.0f) ? 1.0f : -1.0f;
 
     // 减速限制速度 (基于剩余距离)
-    float v_dec_limit = sqrtf(decel * dist / 1.5f);
+    float v_dec_limit = sqrtf(decel * dist *2.0f);
 
     // 加速限制速度 (基于当前速度)
     float v_acc_limit = fabsf(motor->last_cmd_spd) + accel * dt;
@@ -183,7 +183,7 @@ void arm_PID_INIT(void)
             15000,    // 最大输出（配合高速抬升）
             8000,     // 积分限幅
             15,       // KP
-            0.3f,     // KI
+            0.5f,     // KI
             0);       // KD
     }
 }
@@ -253,13 +253,13 @@ void lift_set_target(uint8_t idx, float target)
 void lift_goto_target(void)
 {
     const float MAX_SPD = 15000.0f;   // 最大速度（加快抬升）
-    const float ACCEL   = 15000.0f;   // 加速度
+    const float ACCEL   = 25000.0f;   // 加速度
 
     for (int i = 0; i < 2; i++)
     {
         float spd = Motor_SetPositionProfile(
             &control_3508_classic[i], &motor_3508[i],
-            lift_target[i], MAX_SPD, ACCEL, ACCEL, 10.0f, 25.0f);
+            lift_target[i], MAX_SPD, ACCEL, ACCEL, 10.0f, 3000.0f);
         SetSpeed(&control_3508_classic[i], spd);
     }
 

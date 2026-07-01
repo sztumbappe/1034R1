@@ -783,7 +783,7 @@ float K_GRAVITY[2] = {1.5f, 2.0f};  /* [0]=粉色臂 [1]=蓝色臂, 单位 Nm */
 void robstride_goto_target(float tgt, uint8_t motor_idx)
 {
     /* 控制参数 */
-    const float MAX_WRIST_SPEED = 3.5f;
+    const float MAX_WRIST_SPEED = 3.8f;
     const float WRIST_ANGLE_EPS = 0.004f;
     const float STABLE_ALPHA    = 0.10f;
     const float DT              = 0.002f;

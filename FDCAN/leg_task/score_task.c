@@ -12,6 +12,7 @@
 #include "raise_task.h"
 #include "ROBSTRIDE.h"
 #include "cmsis_os2.h"
+#include "esc_control.h"
 
 /* ======================== 外部变量 ======================== */
 extern volatile float target_red;
@@ -27,7 +28,8 @@ typedef enum {
     SCORE_PICKUP_STEP1,        /* 取料: relay_pickup_kfs (含200ms阻塞) */
     SCORE_STORE_RAISE,         /* 存料: 升到600 */
     SCORE_STORE_RETRACT,       /* 存料: 灵足收到后面 */
-    SCORE_OUTLAY_WAIT_HEIGHT,  /* 放料: 升600 + 灵足展开, 等两路到位 */
+    SCORE_OUTLAY_WAIT_HEIGHT,  /* 放料: 设target=4(高600) + 灵足展开 */
+    SCORE_OUTLAY_WAIT_LEG,     /* 放料: 等灵足展开到位 */
     SCORE_OUTLAY_EXTEND,       /* 放料: 气缸伸出, 保持吸附 */
     /* ---- 新增 ---- */
     SCORE_ABSORB_WAIT_BOTH,    /* 取料: 降100 + 灵足展开, 等两路到位 */
@@ -38,6 +40,7 @@ typedef enum {
 /* ======================== 内部变量 ======================== */
 score_state_t state[2] = {SCORE_IDLE, SCORE_IDLE};
 static uint32_t enter_tick[2] = {0, 0};
+static uint8_t pump_was_idle[2] = {0, 0};  /* 进入等待状态时泵是否未转 */
 
 /* ======================== KFS目标高度存储 ======================== */
 static float kfs_height_red = 4;   /* RCKFS存的左臂高度, 默认600 */
@@ -92,15 +95,20 @@ static void arm_sm_update(uint8_t idx)
         } else {
             target_blue = kfs_height_blue;
         }
-        /* 首帧+20ms跳过，等 lift_control_update 刷新 lift_target */
+        arm_close[idx] = 0;          //保证机械臂在前
+        /* 首帧启动气泵 + 20ms guard，等 lift_control_update 刷新 lift_target */
         if (enter_tick[idx] == 0) {
             enter_tick[idx] = now;
+            pump_was_idle[idx] = !motor_run_flag;
+            motor_run_flag = 1;
+            esc_update();
         }
         if (now - enter_tick[idx] < 20) {
             break;
         }
-        /* 到位检测 或 2秒超时 */
-        if ((lift_arrived(idx) && leg_arrived(idx)) || (now - enter_tick[idx] >= 2000)) {
+        /* 到位 + 泵已就绪 或 2秒超时 */
+        if ((lift_arrived(idx) && leg_arrived(idx) && (!pump_was_idle[idx] || now - enter_tick[idx] >= 300))
+            || (now - enter_tick[idx] >= 2000)) {
             state[idx] = SCORE_PICKUP_STEP1;
         }
         break;
@@ -120,15 +128,19 @@ static void arm_sm_update(uint8_t idx)
             target_blue = 1;
         }
         arm_close[idx] = 0;
-        /* 首帧+20ms跳过，等 lift_control_update 刷新 lift_target */
+        /* 首帧启动气泵 + 20ms guard，等 lift_control_update 刷新 lift_target */
         if (enter_tick[idx] == 0) {
             enter_tick[idx] = now;
+            pump_was_idle[idx] = !motor_run_flag;
+            motor_run_flag = 1;
+            esc_update();
         }
         if (now - enter_tick[idx] < 20) {
             break;
         }
-        /* 两路都到位 或 3秒超时 */
-        if ((lift_arrived(idx) && leg_arrived(idx)) || (now - enter_tick[idx] >= 3000)) {
+        /* 两路到位 + 泵已就绪 或 3秒超时 */
+        if ((lift_arrived(idx) && leg_arrived(idx) && (!pump_was_idle[idx] || now - enter_tick[idx] >= 300))
+            || (now - enter_tick[idx] >= 3000)) {
             state[idx] = SCORE_ABSORB_DO;
         }
         break;
@@ -167,13 +179,19 @@ static void arm_sm_update(uint8_t idx)
 
     /* ---------- 放料流程 ---------- */
     case SCORE_OUTLAY_WAIT_HEIGHT:
-        /* 升到600 + 灵足展开 同步进行 */
+        /* 设高600 + 灵足展开, 立即转入等灵足 */
         if (idx == 0) {
             target_red = 4;
         } else {
             target_blue = 4;
         }
         arm_close[idx] = 0;
+        state[idx] = SCORE_OUTLAY_WAIT_LEG;
+        enter_tick[idx] = 0;
+        break;
+
+    case SCORE_OUTLAY_WAIT_LEG:
+        /* 等灵足展开到位 或 2秒超时 */
         /* 首帧+20ms跳过，等 lift_control_update 刷新 lift_target */
         if (enter_tick[idx] == 0) {
             enter_tick[idx] = now;
@@ -181,8 +199,7 @@ static void arm_sm_update(uint8_t idx)
         if (now - enter_tick[idx] < 20) {
             break;
         }
-        /* 两路都到位 或 3秒超时 */
-        if ((lift_arrived(idx) && leg_arrived(idx)) || (now - enter_tick[idx] >= 3000)) {
+        if (leg_arrived(idx) || (now - enter_tick[idx] >= 2000)) {
             state[idx] = SCORE_OUTLAY_EXTEND;
         }
         break;
