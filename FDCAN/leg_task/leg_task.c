@@ -32,6 +32,12 @@ volatile float arm_init;
 /* 预选赛1避障模式: 1=使能, 0=关闭(正式比赛) */
 static uint8_t prelim1_mode = 1;       /* 2号臂最低200, 禁止降到100 */
 
+/* ======================== 预选赛灵足预备标志 ======================== */
+#if MATCH_MODE != MATCH_MODE_NORMAL
+uint8_t prelim_prep_flag[2] = {0, 0};   /* [0]=左臂 [1]=右臂: 1=强制预备角度 */
+float   prelim_prep_angle[2] = {0, 0};  /* [0]=左臂 [1]=右臂: 预备目标角度(rad) */
+#endif
+
 /* ======================== 外部变量 ========·
 ================ */
 extern uint8_t raise_control_enable;
@@ -61,6 +67,19 @@ static void leg_hw_init(void)
     osDelay(100);
     s++;
     lift_init();                 // 记录双2006上电零点
+
+#if MATCH_MODE != MATCH_MODE_NORMAL
+    /* ---- 预选赛2模式: 预存KFS高度 + 自动开泵 + 指定侧吸气 ---- */
+    score_preset_kfs_height(4, 4);
+    motor_run_flag = 1;
+    esc_update();
+#if MATCH_MODE == MATCH_MODE_PRELIM
+    relay_vacuum_off(1);   /* 红方: 左臂断电→吸气, 操作员手动放KFS */
+#elif MATCH_MODE == MATCH_MODE_BLUE
+    relay_vacuum_off(2);   /* 蓝方: 右臂断电→吸气, 操作员手动放KFS */
+#endif
+    /* arm_init 保持 0, 等首次 ROUTLAY/LOUTLAY/RRECALL/LRECALL 时置 1 */
+#endif
 }
 
 /* ======================== 2. 抬升高度选择 ======================== */
@@ -80,6 +99,14 @@ static float get_lift_pos(volatile float *target, float pos0, float pos1, float 
  */
 static void arm_gimbal_update(uint8_t idx)
 {
+#if MATCH_MODE != MATCH_MODE_NORMAL
+    /* 预选赛2灵足预备: LRECALL步骤④强制对侧臂到预备角度 */
+    if (prelim_prep_flag[idx]) {
+        robstride_goto_target(prelim_prep_angle[idx], idx);
+        return;
+    }
+#endif
+
     /* R1进攻/ R2预备模式: 强制特殊角度, 跳过正常逻辑 */
     extern uint8_t atready_mode;
     if (atready_mode) {

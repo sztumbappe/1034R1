@@ -21,4 +21,11 @@ typedef enum {
  */
 void score_update(void);
 
+/**
+ * @brief 预存 KFS 高度 (预选赛模式初始化时调用)
+ * @param red  左臂高度 (1~4 = H100~H600)
+ * @param blue 右臂高度 (1~4 = H100~H600)
+ */
+void score_preset_kfs_height(float red, float blue);
+
 #endif /* __SCORE_TASK_H */
