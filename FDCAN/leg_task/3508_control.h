@@ -50,11 +50,11 @@ typedef struct {
 #define LIFT_RED_POS0       (671417)             /* 高100*/
 #define LIFT_RED_POS1       (298515)        /* 高200 */
 #define LIFT_RED_POS2       (-442819)       /* 高400 */
-#define LIFT_RED_POS3       (-1022170)      /* 高600 */
+#define LIFT_RED_POS3       (-1025026)      /* 高600 */
 
 /* 2号臂 2006 (control_3508_classic[1]) */
 #define LIFT_BLUE_POS0      (-674104)             /* 高100*/
-#define LIFT_BLUE_POS1      (-158140)        /* 高200 */
+#define LIFT_BLUE_POS1      (-110926)        /* 高200 */      //正常是-150000，预选赛位置偏下
 #define LIFT_BLUE_POS2      (430772)       /* 高400 */
 #define LIFT_BLUE_POS3      (1022170)      /* 高600 */
 
@@ -96,7 +96,18 @@ void lift_update_debug(void);
 /* 检测2006是否到达当前目标位置 (复用Motor_SetPositionProfile的deadband) */
 uint8_t lift_arrived(uint8_t idx);
 
-/* 位置梯形速度规划 */
+/* ======================== 2006堵转保护 ======================== */
+
+/* 堵转检测: 每周期在主循环调用, 比较PID输出和实际转速 */
+void lift_stall_check(void);
+
+/* 清除堵转标记 (目标实际改变时自动调用) */
+void lift_stall_clear(uint8_t idx);
+
+/* 查询是否堵转 (1=堵转已切断) */
+uint8_t lift_is_stalled(uint8_t idx);
+
+/* ======================== 位置梯形速度规划 ======================== */
 float Motor_SetPositionProfile(motor_control *MOTOR, MotorRun *motor,
                                float target_pos, float max_spd,
                                float accel, float decel,

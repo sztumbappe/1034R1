@@ -191,7 +191,7 @@ static void arm_sm_update(uint8_t idx)
         break;
 
     case SCORE_OUTLAY_WAIT_LEG:
-        /* 等灵足展开到位 或 2秒超时 */
+        /* 等灵足展开到位 或 3秒超时 */
         /* 首帧+20ms跳过，等 lift_control_update 刷新 lift_target */
         if (enter_tick[idx] == 0) {
             enter_tick[idx] = now;
@@ -199,7 +199,7 @@ static void arm_sm_update(uint8_t idx)
         if (now - enter_tick[idx] < 20) {
             break;
         }
-        if (leg_arrived(idx) || (now - enter_tick[idx] >= 2000)) {
+        if (leg_arrived(idx) || (now - enter_tick[idx] >= 3000)) {
             state[idx] = SCORE_OUTLAY_EXTEND;
         }
         break;
@@ -248,11 +248,6 @@ static float height_to_target(uint16_t param)
 /* ======================== 指令派发 ======================== */
 static void dispatch_cmd(const rc_cmd_t *cmd)
 {
-    /* 收到任何非R2READY指令时自动退出R2预备模式 */
-    if (cmd->type != RC_CMD_R2READY) {
-        r2ready_mode = 0;
-    }
-
     switch (cmd->type) {
 
     // /* ---- 半自动: 取料/存料 ---- */        //先取右臂后取左
@@ -357,6 +352,17 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
         enter_tick[0] = 0;
         break;
 
+    case RC_CMD_UPLIFT:
+        if (cmd->param1 == 1) {
+            /* UPLIFT1: 大抬升升到顶 */
+            raise_target_pos = AIMDIC;
+            raise_control_enable = 1;
+        } else {
+            /* UPLIFT0: 大抬升降到零点(限位开关) */
+            raise_target_pos = 0;
+            raise_control_enable = 1;
+        }
+        break;
 
     /* ---- 放料切换 ---- */
     case RC_CMD_RSWITCH:
@@ -371,6 +377,27 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
         relay_vacuum_on(1);
         state[0] = SCORE_SWITCH_OPEN;
         enter_tick[0] = 0;
+        break;
+
+    /* ---- 升降控制 ---- */
+    case RC_CMD_RRISING:
+        /* 右臂抬升一级 */
+        if (target_blue < 4) target_blue += 1;
+        break;
+
+    case RC_CMD_LRISING:
+        /* 左臂抬升一级 */
+        if (target_red < 4) target_red += 1;
+        break;
+
+    case RC_CMD_RGODOWN:
+        /* 右臂下降一级 */
+        if (target_blue > 1) target_blue -= 1;
+        break;
+
+    case RC_CMD_LGODOWN:
+        /* 左臂下降一级 */
+        if (target_red > 1) target_red -= 1;
         break;
 
     case RC_CMD_LRECALL:

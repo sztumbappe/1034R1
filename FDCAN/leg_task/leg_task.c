@@ -29,6 +29,9 @@ volatile float target_blue = 4;   /* 2号臂抬升: 1=高100, 2=高200, 3=高400
 static float s;
 volatile float arm_init;
 
+/* 预选赛1避障模式: 1=使能, 0=关闭(正式比赛) */
+static uint8_t prelim1_mode = 1;       /* 2号臂最低200, 禁止降到100 */
+
 /* ======================== 外部变量 ========·
 ================ */
 extern uint8_t raise_control_enable;
@@ -197,7 +200,12 @@ void leg_task(void *argument)
         }
 
         /* 1. 更新双臂抬升 (2006) */
+        /* 预选赛1: 2号臂最低200, 禁止降到100 */
+        if (prelim1_mode && target_blue < 2) target_blue = 2;
         lift_control_update();
+
+        /* 1.5 2006堵转检测 */
+        lift_stall_check();
 
         // 2. 处理RC指令 (得分状态机)
         score_update();

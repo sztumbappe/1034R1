@@ -219,6 +219,63 @@ void SetSpeed(motor_control *ptr, float speed)
     ptr->target_speed = (int16_t)Pidcur;
 }
 
+/* ======================== 2006堵转保护 ======================== */
+/* 判据: PID输出大(想动) + 实际转速接近0(动不了) 持续超时 → 限流 */
+/* 不切断电机, 而是降低输出力矩; 障碍清除后自动恢复全出力 */
+
+#define STALL_PID_THRESHOLD   3000.0f   /* PID输出超过此值认为在"努力驱动" */
+#define STALL_SPEED_THRESHOLD  100.0f   /* 实际转速低于此值认为"没动" (rpm) */
+#define STALL_TIMEOUT_TICKS      500    /* 持续500ms判定堵转 */
+#define STALL_SAFE_CURRENT     5000     /* 堵转时限流为5000 (正常最大15000) */
+
+static struct {
+    uint32_t tick;      /* 开始检测的时刻 */
+    uint8_t  active;    /* 1=已进入限流模式 */
+} stall[2];
+
+void lift_stall_clear(uint8_t idx)
+{
+    if (idx > 1) return;
+    stall[idx].active = 0;
+    stall[idx].tick = 0;
+}
+
+uint8_t lift_is_stalled(uint8_t idx)
+{
+    if (idx > 1) return 0;
+    return stall[idx].active;
+}
+
+void lift_stall_check(void)
+{
+    for (int i = 0; i < 2; i++) {
+        motor_control *m = &control_3508_classic[i];
+        float pid_out = (float)abs(m->target_speed);               /* PID 指令输出 */
+        float actual  = (float)abs(m->chassis_3508_motor.speed_rpm); /* 实际转速 */
+
+        if (stall[i].active) {
+            /* 限流模式: 检测是否已解除堵转 */
+            if (actual > STALL_SPEED_THRESHOLD || pid_out < STALL_PID_THRESHOLD / 2) {
+                stall[i].active = 0;  /* 自动恢复全出力 */
+                stall[i].tick = 0;
+            }
+            continue;
+        }
+
+        /* 正常模式: 检测是否进入堵转 */
+        if (pid_out > STALL_PID_THRESHOLD && actual < STALL_SPEED_THRESHOLD) {
+            uint32_t now = osKernelGetTickCount();
+            if (stall[i].tick == 0) {
+                stall[i].tick = now;
+            } else if (now - stall[i].tick >= STALL_TIMEOUT_TICKS) {
+                stall[i].active = 1;  /* 进入限流模式 */
+            }
+        } else {
+            stall[i].tick = 0;  /* 正常运行, 重置计时 */
+        }
+    }
+}
+
 /* ======================== 2006抬升控制 ======================== */
 
 static float lift_origin[2] = {0.0f, 0.0f};      /* 上电时的位置 */
@@ -246,6 +303,10 @@ void lift_init(void)
 void lift_set_target(uint8_t idx, float target)
 {
     if (idx > 1) return;
+    /* 目标实际改变时 → 自动解除堵转保护 */
+    if (lift_target[idx] != lift_origin[idx] + 0.044f * target) {
+        lift_stall_clear(idx);
+    }
     /* target 是编码器偏移值, 换算成缩放位置 */
     lift_target[idx] = lift_origin[idx] + 0.044f * target;
 }
@@ -257,6 +318,14 @@ void lift_goto_target(void)
 
     for (int i = 0; i < 2; i++)
     {
+        /* 堵转保护: 限流不切断, 保留驱动力 */
+        if (lift_is_stalled(i)) {
+            if      (control_3508_classic[i].target_speed >  STALL_SAFE_CURRENT)
+                control_3508_classic[i].target_speed =  STALL_SAFE_CURRENT;
+            else if (control_3508_classic[i].target_speed < -STALL_SAFE_CURRENT)
+                control_3508_classic[i].target_speed = -STALL_SAFE_CURRENT;
+        }
+
         float spd = Motor_SetPositionProfile(
             &control_3508_classic[i], &motor_3508[i],
             lift_target[i], MAX_SPD, ACCEL, ACCEL, 10.0f, 3000.0f);
