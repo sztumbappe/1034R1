@@ -23,6 +23,11 @@
 #include "math.h"
 #include "tim.h"
 #include "rc_protocol.h"
+#include "stdint.h"
+/* ======================== 临时继电器气泵 (PA9) ======================== */
+#define PUMP_RELAY_PORT   GPIOA
+#define PUMP_RELAY_PIN    GPIO_PIN_9
+
 /* ======================== 遥控器接口变量 ======================== */
 volatile float target_red  = 4;   /* 1号臂抬升: 1=高100, 2=高200, 3=高400, 4=高600 */
 volatile float target_blue = 4;   /* 2号臂抬升: 1=高100, 2=高200, 3=高400, 4=高600 */
@@ -164,12 +169,16 @@ static void lift_control_update(void)
 /* ======================== 24V掉电恢复 ======================== */
 
 /**
- * @brief 检测24V丢失并自动恢复
- * @return 0=正常, 1=24V丢失中(主循环应跳过控制)
+ * @brief 检测24V丢失并自动恢复 (非阻塞版本)
+ * @return 0=正常, 1=24V丢失/恢复中(主循环应跳过电机控制)
+ * @note  内部不含 osDelay，不阻塞主循环，状态机和通信始终运行
  */
 static uint8_t power_supervise(void)
 {
-    static uint8_t lost = 0;  /* 0=正常, 1=24V已丢失 */
+    static uint8_t  lost = 0;        /* 0=正常, 1=24V已丢失 */
+    static uint8_t  recovering = 0;  /* 0=未恢复, 1=恢复中(等待500ms稳定) */
+    static uint32_t recover_tick = 0;
+    static uint32_t last_heartbeat = 0;
 
     if (!lost) {
         /* CAN3超300ms没收到数据 → 2006掉电 = 24V丢失 */
@@ -181,17 +190,30 @@ static uint8_t power_supervise(void)
 
     /* 24V丢失模式: 检测CAN3数据是否恢复 */
     if (osKernelGetTickCount() - can3_last_tick <= 50) {
-        /* 24V恢复 → 非阻塞重启灵足+2006归零 */
-	    osDelay(500);
-        robstride_restart();        /* 非阻塞: 只发使能指令 */
-        lift_init();
-        lost = 0;
-        return 0;  /* 恢复完成 */
+        if (!recovering) {
+            /* 首次检测到CAN3恢复 → 立即重启灵足 (非阻塞) */
+            recovering = 1;
+            recover_tick = osKernelGetTickCount();
+            robstride_restart();        /* 非阻塞: 只发使能指令 */
+        }
+        /* 等待500ms稳定后再归零2006 */
+        if (osKernelGetTickCount() - recover_tick >= 500) {
+            lift_init();
+            lost = 0;
+            recovering = 0;
+            return 0;  /* 恢复完成 */
+        }
+        return 1;  /* 恢复中, 跳过电机控制 */
+    } else {
+        /* CAN3 数据又断了, 重置恢复状态 */
+        recovering = 0;
     }
 
-    /* 24V还没恢复: 发心跳保持2006通讯, 跳过控制 */
-    CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, 0, 0);
-    osDelay(10);
+    /* 24V还没恢复: 每~100ms发一次心跳保持2006通讯 (非阻塞) */
+    if (osKernelGetTickCount() - last_heartbeat >= 100) {
+        CAN_CMD_RM(&hfdcan3, CAN_CHASSIS_ALL_ID, 0, 0, 0, 0);
+        last_heartbeat = osKernelGetTickCount();
+    }
     return 1;  /* 仍在丢失中 */
 }
 
@@ -215,46 +237,54 @@ void leg_task(void *argument)
     /* ======================== 主循环 ======================== */
     for (;;)
     {
-        if (power_supervise()) continue;  /* 24V丢失中, 跳过控制 */
+        uint8_t pwr_lost = power_supervise();  /* 非阻塞检测, 不跳过主循环 */
 
-        /* 气泵控制 */ 
-        if (s1 > 0.5f) {
-            relay_pickup_kfs(s1);	
-            s1 = -1;
-        } else if (s1 == -3.0f) {
-            motor_run_flag = 0;    
-		        relay_vacuum_on(1);  /* 真空阀1 通电 → 断真空 */
+        /* ---- 电机控制 (仅24V正常时执行) ---- */
+        if (!pwr_lost) {
+
+            /* 气泵控制 */
+            if (s1 > 0.5f) {
+                relay_pickup_kfs(s1);
+                s1 = -1;
+            } else if (s1 == -3.0f) {
+                motor_run_flag = 0;
+                relay_vacuum_on(1);  /* 真空阀1 通电 → 断真空 */
+            }
+
+            /* 1. 更新双臂抬升 (2006) */
+            /* 预选赛1: 2号臂最低200, 禁止降到100 */
+            if (prelim1_mode && target_blue < 2) target_blue = 2;
+            lift_control_update();
+
+            /* 1.5 2006堵转检测 */
+            lift_stall_check();
+
+            /* 3. 更新灵足 (收到KFS前→0°, 收到后→正常角度) */
+            /* pattern巡查: 未就绪时原地不动, 就绪后切回正常控制 */
+            if (Pos_Info[1].pattern != 2)
+                robstride_keepalive(0);
+            else
+                arm_gimbal_update(0);
+            if (Pos_Info[2].pattern != 2)
+                robstride_keepalive(1);
+            else
+                arm_gimbal_update(1);
+
+            /* 5. ESC 电调控制 */
+            esc_update();
+
+            /* 5.5 继电器气泵 (临时: PA9, 复用 motor_run_flag) */
+            HAL_GPIO_WritePin(PUMP_RELAY_PORT, PUMP_RELAY_PIN,
+                              motor_run_flag ? GPIO_PIN_SET : GPIO_PIN_RESET);
         }
 
-        /* 1. 更新双臂抬升 (2006) */
-        /* 预选赛1: 2号臂最低200, 禁止降到100 */
-        if (prelim1_mode && target_blue < 2) target_blue = 2;
-        lift_control_update();
-
-        /* 1.5 2006堵转检测 */
-        lift_stall_check();
-
-        // 2. 处理RC指令 (得分状态机)
+        /* 2. 处理RC指令 (得分状态机) — 始终运行 */
         score_update();
 
-        /* 3. 更新灵足 (收到KFS前→0°, 收到后→正常角度) */
-        /* pattern巡查: 未就绪时原地不动, 就绪后切回正常控制 */
-        if (Pos_Info[1].pattern != 2)
-            robstride_keepalive(0);
-        else
-            arm_gimbal_update(0);
-        if (Pos_Info[2].pattern != 2)
-            robstride_keepalive(1);
-        else
-            arm_gimbal_update(1);
-
-        /* 4. RC串口通信轮询 (ACK发送 + 超时重发) */
+        /* 4. RC串口通信轮询 (ACK发送 + 超时重发) — 始终运行 */
         rc_tx_poll();
 
-        /* 5. ESC 电调控制 */
-        esc_update();
-
-        /* 6. 非阻塞 KFS 取料状态机推进 */
+        /* 6. 非阻塞 KFS 取料状态机推进 — 始终运行 */
         relay_pickup_poll();
 
         lift_update_debug();

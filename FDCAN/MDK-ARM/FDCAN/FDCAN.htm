@@ -3,7 +3,7 @@
 <title>Static Call Graph - [FDCAN\FDCAN.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image FDCAN\FDCAN.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6230001: Last Updated: Fri Jul  3 17:47:00 2026
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6230001: Last Updated: Sun Jul  5 03:13:03 2026
 <BR><P>
 <H3>Maximum Stack Usage =        368 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -751,11 +751,11 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = strlen
 </UL>
 <BR>[Called By]<UL><LI><a href="#[108]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;match_prefix
-<LI><a href="#[14f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
+<LI><a href="#[150]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
 </UL>
 
 <P><STRONG><a name="[17c]"></a>__aeabi_memcpy</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, rt_memcpy_v6.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[14f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
+<BR><BR>[Called By]<UL><LI><a href="#[150]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
 <LI><a href="#[176]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueReceive
 <LI><a href="#[174]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
 </UL>
@@ -870,7 +870,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FDCAN_AddMessageToTxFifoQ
 </UL>
-<BR>[Called By]<UL><LI><a href="#[154]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_goto_target
+<BR>[Called By]<UL><LI><a href="#[155]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_goto_target
 <LI><a href="#[140]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;di3508_r2control_Begin
 <LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 <LI><a href="#[9a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Raise_task
@@ -941,13 +941,13 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 </UL>
-<BR>[Called By]<UL><LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_IRQHandler
+<BR>[Called By]<UL><LI><a href="#[10a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_IRQHandler
 </UL>
 
 <P><STRONG><a name="[10e]"></a>HAL_DMA_Abort_IT</STRONG> (Thumb, 694 bytes, Stack size 8 bytes, stm32h7xx_hal_dma.o(.text.HAL_DMA_Abort_IT))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = HAL_DMA_Abort_IT
 </UL>
-<BR>[Called By]<UL><LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_IRQHandler
+<BR>[Called By]<UL><LI><a href="#[10a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_IRQHandler
 </UL>
 
 <P><STRONG><a name="[c1]"></a>HAL_DMA_IRQHandler</STRONG> (Thumb, 2072 bytes, Stack size 40 bytes, stm32h7xx_hal_dma.o(.text.HAL_DMA_IRQHandler))
@@ -985,7 +985,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CAN_CMD_RM
 <LI><a href="#[12f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RobStrite_Motor_05_move_control
 <LI><a href="#[158]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_goto_init
-<LI><a href="#[152]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_restart
+<LI><a href="#[153]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_restart
 <LI><a href="#[14e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_keepalive
 <LI><a href="#[14b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_init
 </UL>
@@ -1163,9 +1163,10 @@ Global Symbols
 <LI><a href="#[11d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_GPIO_Init
 <LI><a href="#[13c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_cylinder_retract
 <LI><a href="#[13f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_cylinder_extend
-<LI><a href="#[153]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_vacuum_on
+<LI><a href="#[154]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_vacuum_on
 <LI><a href="#[13b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_kfs
-<LI><a href="#[150]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_poll
+<LI><a href="#[151]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_poll
+<LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
 <P><STRONG><a name="[c4]"></a>HAL_GetTick</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, stm32h7xx_hal.o(.text.HAL_GetTick))
@@ -1181,8 +1182,8 @@ Global Symbols
 <LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_Transmit
 <LI><a href="#[133]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UART_WaitOnFlagUntilTimeout
 <LI><a href="#[114]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UART_CheckIdleState
-<LI><a href="#[154]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_goto_target
-<LI><a href="#[14f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
+<LI><a href="#[155]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_goto_target
+<LI><a href="#[150]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
 </UL>
 
 <P><STRONG><a name="[104]"></a>HAL_IncTick</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, stm32h7xx_hal.o(.text.HAL_IncTick))
@@ -1477,6 +1478,7 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[106]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UART_Start_Receive_DMA
 </UL>
 <BR>[Called By]<UL><LI><a href="#[15d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_protocol_init
+<LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_ErrorCallback
 <LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UARTEx_RxEventCallback
 </UL>
 
@@ -1486,13 +1488,13 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[105]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UARTEx_ReceiveToIdle_DMA
 <LI><a href="#[108]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;match_prefix
 </UL>
-<BR>[Called By]<UL><LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_IRQHandler
+<BR>[Called By]<UL><LI><a href="#[10a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_IRQHandler
 <LI><a href="#[9f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UART_DMARxHalfCplt
 <LI><a href="#[9e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UART_DMAReceiveCplt
 </UL>
 
 <P><STRONG><a name="[10f]"></a>HAL_UARTEx_RxFifoFullCallback</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32h7xx_hal_uart_ex.o(.text.HAL_UARTEx_RxFifoFullCallback))
-<BR><BR>[Called By]<UL><LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_IRQHandler
+<BR><BR>[Called By]<UL><LI><a href="#[10a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_IRQHandler
 </UL>
 
 <P><STRONG><a name="[127]"></a>HAL_UARTEx_SetRxFifoThreshold</STRONG> (Thumb, 140 bytes, Stack size 16 bytes, stm32h7xx_hal_uart_ex.o(.text.HAL_UARTEx_SetRxFifoThreshold))
@@ -1507,30 +1509,34 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[125]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_USART6_UART_Init
 </UL>
 
-<P><STRONG><a name="[10c]"></a>HAL_UARTEx_TxFifoEmptyCallback</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32h7xx_hal_uart_ex.o(.text.HAL_UARTEx_TxFifoEmptyCallback))
-<BR><BR>[Called By]<UL><LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_IRQHandler
+<P><STRONG><a name="[10d]"></a>HAL_UARTEx_TxFifoEmptyCallback</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32h7xx_hal_uart_ex.o(.text.HAL_UARTEx_TxFifoEmptyCallback))
+<BR><BR>[Called By]<UL><LI><a href="#[10a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_IRQHandler
 </UL>
 
-<P><STRONG><a name="[10a]"></a>HAL_UARTEx_WakeupCallback</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32h7xx_hal_uart_ex.o(.text.HAL_UARTEx_WakeupCallback))
-<BR><BR>[Called By]<UL><LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_IRQHandler
+<P><STRONG><a name="[10b]"></a>HAL_UARTEx_WakeupCallback</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32h7xx_hal_uart_ex.o(.text.HAL_UARTEx_WakeupCallback))
+<BR><BR>[Called By]<UL><LI><a href="#[10a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_IRQHandler
 </UL>
 
-<P><STRONG><a name="[10d]"></a>HAL_UART_ErrorCallback</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32h7xx_hal_uart.o(.text.HAL_UART_ErrorCallback))
-<BR><BR>[Called By]<UL><LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_IRQHandler
+<P><STRONG><a name="[109]"></a>HAL_UART_ErrorCallback</STRONG> (Thumb, 306 bytes, Stack size 8 bytes, rc_protocol.o(.text.HAL_UART_ErrorCallback))
+<BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = HAL_UART_ErrorCallback &rArr; HAL_UARTEx_ReceiveToIdle_DMA &rArr; UART_Start_Receive_DMA &rArr; HAL_DMA_Start_IT &rArr; DMA_SetConfig
+</UL>
+<BR>[Calls]<UL><LI><a href="#[105]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UARTEx_ReceiveToIdle_DMA
+</UL>
+<BR>[Called By]<UL><LI><a href="#[10a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_IRQHandler
 <LI><a href="#[96]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UART_DMAAbortOnError
 <LI><a href="#[99]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UART_DMAError
 </UL>
 
-<P><STRONG><a name="[109]"></a>HAL_UART_IRQHandler</STRONG> (Thumb, 1674 bytes, Stack size 16 bytes, stm32h7xx_hal_uart.o(.text.HAL_UART_IRQHandler))
+<P><STRONG><a name="[10a]"></a>HAL_UART_IRQHandler</STRONG> (Thumb, 1674 bytes, Stack size 16 bytes, stm32h7xx_hal_uart.o(.text.HAL_UART_IRQHandler))
 <BR><BR>[Stack]<UL><LI>Max Depth = 168<LI>Call Chain = HAL_UART_IRQHandler &rArr; HAL_UARTEx_RxEventCallback &rArr; HAL_UARTEx_ReceiveToIdle_DMA &rArr; UART_Start_Receive_DMA &rArr; HAL_DMA_Start_IT &rArr; DMA_SetConfig
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_DMA_Abort
 <LI><a href="#[10e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_DMA_Abort_IT
 <LI><a href="#[10f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UARTEx_RxFifoFullCallback
-<LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UARTEx_TxFifoEmptyCallback
-<LI><a href="#[10a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UARTEx_WakeupCallback
-<LI><a href="#[10d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_ErrorCallback
-<LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_TxCpltCallback
+<LI><a href="#[10d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UARTEx_TxFifoEmptyCallback
+<LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UARTEx_WakeupCallback
+<LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_ErrorCallback
+<LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_TxCpltCallback
 <LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UARTEx_RxEventCallback
 </UL>
 <BR>[Called By]<UL><LI><a href="#[4c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART6_IRQHandler
@@ -1576,7 +1582,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 </UL>
-<BR>[Called By]<UL><LI><a href="#[14f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
+<BR>[Called By]<UL><LI><a href="#[150]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
 </UL>
 
 <P><STRONG><a name="[116]"></a>HAL_UART_Transmit_DMA</STRONG> (Thumb, 236 bytes, Stack size 8 bytes, stm32h7xx_hal_uart.o(.text.HAL_UART_Transmit_DMA))
@@ -1584,11 +1590,11 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_DMA_Start_IT
 </UL>
-<BR>[Called By]<UL><LI><a href="#[14f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
+<BR>[Called By]<UL><LI><a href="#[150]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
 </UL>
 
-<P><STRONG><a name="[10b]"></a>HAL_UART_TxCpltCallback</STRONG> (Thumb, 30 bytes, Stack size 0 bytes, rc_protocol.o(.text.HAL_UART_TxCpltCallback))
-<BR><BR>[Called By]<UL><LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_IRQHandler
+<P><STRONG><a name="[10c]"></a>HAL_UART_TxCpltCallback</STRONG> (Thumb, 30 bytes, Stack size 0 bytes, rc_protocol.o(.text.HAL_UART_TxCpltCallback))
+<BR><BR>[Called By]<UL><LI><a href="#[10a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_IRQHandler
 <LI><a href="#[97]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UART_DMATransmitCplt
 </UL>
 
@@ -1650,8 +1656,8 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[11d]"></a>MX_GPIO_Init</STRONG> (Thumb, 266 bytes, Stack size 56 bytes, gpio.o(.text.MX_GPIO_Init))
-<BR><BR>[Stack]<UL><LI>Max Depth = 104<LI>Call Chain = MX_GPIO_Init &rArr; HAL_GPIO_Init
+<P><STRONG><a name="[11d]"></a>MX_GPIO_Init</STRONG> (Thumb, 308 bytes, Stack size 64 bytes, gpio.o(.text.MX_GPIO_Init))
+<BR><BR>[Stack]<UL><LI>Max Depth = 112<LI>Call Chain = MX_GPIO_Init &rArr; HAL_GPIO_Init
 </UL>
 <BR>[Calls]<UL><LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_Init
 <LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
@@ -1740,7 +1746,7 @@ Global Symbols
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32h723xx.o(RESET)
 </UL>
 <P><STRONG><a name="[159]"></a>SetSpeed</STRONG> (Thumb, 276 bytes, Stack size 0 bytes, 3508_control.o(.text.SetSpeed))
-<BR><BR>[Called By]<UL><LI><a href="#[154]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_goto_target
+<BR><BR>[Called By]<UL><LI><a href="#[155]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_goto_target
 </UL>
 
 <P><STRONG><a name="[9]"></a>SysTick_Handler</STRONG> (Thumb, 30 bytes, Stack size 8 bytes, cmsis_os2.o(.text.SysTick_Handler))
@@ -1825,7 +1831,7 @@ Global Symbols
 <P><STRONG><a name="[4c]"></a>USART6_IRQHandler</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, stm32h7xx_it.o(.text.USART6_IRQHandler))
 <BR><BR>[Stack]<UL><LI>Max Depth = 168<LI>Call Chain = USART6_IRQHandler &rArr; HAL_UART_IRQHandler &rArr; HAL_UARTEx_RxEventCallback &rArr; HAL_UARTEx_ReceiveToIdle_DMA &rArr; UART_Start_Receive_DMA &rArr; HAL_DMA_Start_IT &rArr; DMA_SetConfig
 </UL>
-<BR>[Calls]<UL><LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_IRQHandler
+<BR>[Calls]<UL><LI><a href="#[10a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_IRQHandler
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32h723xx.o(RESET)
 </UL>
@@ -1901,24 +1907,25 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[9b]"></a>leg_task</STRONG> (Thumb, 880 bytes, Stack size 8 bytes, leg_task.o(.text.leg_task))
+<P><STRONG><a name="[9b]"></a>leg_task</STRONG> (Thumb, 940 bytes, Stack size 8 bytes, leg_task.o(.text.leg_task))
 <BR><BR>[Stack]<UL><LI>Max Depth = 216<LI>Call Chain = leg_task &rArr; robstride_init &rArr; osDelay &rArr; vTaskDelay &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[12a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
+<LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 <LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osKernelGetTickCount
 <LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CAN_CMD_RM
 <LI><a href="#[158]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_goto_init
 <LI><a href="#[157]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_goto_target
-<LI><a href="#[156]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;score_update
-<LI><a href="#[155]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_stall_check
-<LI><a href="#[154]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_goto_target
-<LI><a href="#[153]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_vacuum_on
+<LI><a href="#[156]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_stall_check
+<LI><a href="#[155]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_goto_target
+<LI><a href="#[154]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_vacuum_on
 <LI><a href="#[13b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_kfs
-<LI><a href="#[152]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_restart
-<LI><a href="#[151]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_update_debug
-<LI><a href="#[150]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_poll
+<LI><a href="#[153]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_restart
+<LI><a href="#[152]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_update_debug
+<LI><a href="#[151]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_poll
+<LI><a href="#[150]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
+<LI><a href="#[14f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;score_update
 <LI><a href="#[13d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;esc_update
-<LI><a href="#[14f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
 <LI><a href="#[14e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_keepalive
 <LI><a href="#[14d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_set_target
 <LI><a href="#[14c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_init
@@ -1934,7 +1941,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[13a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;arm_sm_update
 </UL>
 
-<P><STRONG><a name="[154]"></a>lift_goto_target</STRONG> (Thumb, 600 bytes, Stack size 88 bytes, 3508_control.o(.text.lift_goto_target))
+<P><STRONG><a name="[155]"></a>lift_goto_target</STRONG> (Thumb, 600 bytes, Stack size 88 bytes, 3508_control.o(.text.lift_goto_target))
 <BR><BR>[Stack]<UL><LI>Max Depth = 132<LI>Call Chain = lift_goto_target &rArr; CAN_CMD_RM &rArr; HAL_FDCAN_AddMessageToTxFifoQ
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
@@ -1952,7 +1959,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
-<P><STRONG><a name="[155]"></a>lift_stall_check</STRONG> (Thumb, 226 bytes, Stack size 16 bytes, 3508_control.o(.text.lift_stall_check))
+<P><STRONG><a name="[156]"></a>lift_stall_check</STRONG> (Thumb, 226 bytes, Stack size 16 bytes, 3508_control.o(.text.lift_stall_check))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = lift_stall_check &rArr; osKernelGetTickCount &rArr; xTaskGetTickCountFromISR
 </UL>
 <BR>[Calls]<UL><LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osKernelGetTickCount
@@ -1960,7 +1967,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
-<P><STRONG><a name="[151]"></a>lift_update_debug</STRONG> (Thumb, 68 bytes, Stack size 0 bytes, 3508_control.o(.text.lift_update_debug))
+<P><STRONG><a name="[152]"></a>lift_update_debug</STRONG> (Thumb, 68 bytes, Stack size 0 bytes, 3508_control.o(.text.lift_update_debug))
 <BR><BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
@@ -2010,9 +2017,9 @@ Global Symbols
 </UL>
 <BR>[Called By]<UL><LI><a href="#[cd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FDCAN_RxFifo0Callback
 <LI><a href="#[13a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;arm_sm_update
-<LI><a href="#[155]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_stall_check
+<LI><a href="#[156]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_stall_check
 <LI><a href="#[13b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_kfs
-<LI><a href="#[150]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_poll
+<LI><a href="#[151]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_poll
 <LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
@@ -2051,15 +2058,15 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[17f]"></a>rc_clear_new_cmd</STRONG> (Thumb, 14 bytes, Stack size 0 bytes, rc_protocol.o(.text.rc_clear_new_cmd))
-<BR><BR>[Called By]<UL><LI><a href="#[156]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;score_update
+<BR><BR>[Called By]<UL><LI><a href="#[14f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;score_update
 </UL>
 
 <P><STRONG><a name="[17e]"></a>rc_get_cmd</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, rc_protocol.o(.text.rc_get_cmd))
-<BR><BR>[Called By]<UL><LI><a href="#[156]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;score_update
+<BR><BR>[Called By]<UL><LI><a href="#[14f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;score_update
 </UL>
 
 <P><STRONG><a name="[17d]"></a>rc_has_new_cmd</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, rc_protocol.o(.text.rc_has_new_cmd))
-<BR><BR>[Called By]<UL><LI><a href="#[156]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;score_update
+<BR><BR>[Called By]<UL><LI><a href="#[14f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;score_update
 </UL>
 
 <P><STRONG><a name="[15d]"></a>rc_protocol_init</STRONG> (Thumb, 308 bytes, Stack size 16 bytes, rc_protocol.o(.text.rc_protocol_init))
@@ -2072,7 +2079,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[14f]"></a>rc_tx_poll</STRONG> (Thumb, 194 bytes, Stack size 32 bytes, rc_protocol.o(.text.rc_tx_poll))
+<P><STRONG><a name="[150]"></a>rc_tx_poll</STRONG> (Thumb, 194 bytes, Stack size 32 bytes, rc_protocol.o(.text.rc_tx_poll))
 <BR><BR>[Stack]<UL><LI>Max Depth = 64<LI>Call Chain = rc_tx_poll &rArr; HAL_UART_Transmit_DMA &rArr; HAL_DMA_Start_IT &rArr; DMA_SetConfig
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
@@ -2115,7 +2122,7 @@ Global Symbols
 <LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
-<P><STRONG><a name="[150]"></a>relay_pickup_poll</STRONG> (Thumb, 162 bytes, Stack size 16 bytes, relay.o(.text.relay_pickup_poll))
+<P><STRONG><a name="[151]"></a>relay_pickup_poll</STRONG> (Thumb, 162 bytes, Stack size 16 bytes, relay.o(.text.relay_pickup_poll))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = relay_pickup_poll &rArr; osKernelGetTickCount &rArr; xTaskGetTickCountFromISR
 </UL>
 <BR>[Calls]<UL><LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
@@ -2124,10 +2131,10 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
-<P><STRONG><a name="[153]"></a>relay_vacuum_on</STRONG> (Thumb, 44 bytes, Stack size 0 bytes, relay.o(.text.relay_vacuum_on))
+<P><STRONG><a name="[154]"></a>relay_vacuum_on</STRONG> (Thumb, 44 bytes, Stack size 0 bytes, relay.o(.text.relay_vacuum_on))
 <BR><BR>[Calls]<UL><LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[156]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;score_update
+<BR>[Called By]<UL><LI><a href="#[14f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;score_update
 <LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
@@ -2169,7 +2176,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
-<P><STRONG><a name="[152]"></a>robstride_restart</STRONG> (Thumb, 126 bytes, Stack size 80 bytes, robstride.o(.text.robstride_restart))
+<P><STRONG><a name="[153]"></a>robstride_restart</STRONG> (Thumb, 126 bytes, Stack size 80 bytes, robstride.o(.text.robstride_restart))
 <BR><BR>[Stack]<UL><LI>Max Depth = 108<LI>Call Chain = robstride_restart &rArr; HAL_FDCAN_AddMessageToTxFifoQ
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FDCAN_AddMessageToTxFifoQ
@@ -2177,14 +2184,14 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
-<P><STRONG><a name="[156]"></a>score_update</STRONG> (Thumb, 734 bytes, Stack size 8 bytes, score_task.o(.text.score_update))
+<P><STRONG><a name="[14f]"></a>score_update</STRONG> (Thumb, 786 bytes, Stack size 8 bytes, score_task.o(.text.score_update))
 <BR><BR>[Stack]<UL><LI>Max Depth = 56<LI>Call Chain = score_update &rArr; arm_sm_update &rArr; relay_pickup_kfs &rArr; osKernelGetTickCount &rArr; xTaskGetTickCountFromISR
 </UL>
 <BR>[Calls]<UL><LI><a href="#[13a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;arm_sm_update
 <LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_clear_new_cmd
 <LI><a href="#[17d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_has_new_cmd
 <LI><a href="#[17e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_get_cmd
-<LI><a href="#[153]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_vacuum_on
+<LI><a href="#[154]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_vacuum_on
 </UL>
 <BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
@@ -2584,7 +2591,7 @@ Local Symbols
 </UL>
 
 <P><STRONG><a name="[97]"></a>UART_DMATransmitCplt</STRONG> (Thumb, 186 bytes, Stack size 0 bytes, stm32h7xx_hal_uart.o(.text.UART_DMATransmitCplt))
-<BR><BR>[Calls]<UL><LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_TxCpltCallback
+<BR><BR>[Calls]<UL><LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_TxCpltCallback
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> stm32h7xx_hal_uart.o(.text.HAL_UART_Transmit_DMA)
 </UL>
@@ -2594,7 +2601,9 @@ Local Symbols
 <BR>[Address Reference Count : 1]<UL><LI> stm32h7xx_hal_uart.o(.text.HAL_UART_Transmit_DMA)
 </UL>
 <P><STRONG><a name="[99]"></a>UART_DMAError</STRONG> (Thumb, 500 bytes, Stack size 0 bytes, stm32h7xx_hal_uart.o(.text.UART_DMAError))
-<BR><BR>[Calls]<UL><LI><a href="#[10d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_ErrorCallback
+<BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = UART_DMAError &rArr; HAL_UART_ErrorCallback &rArr; HAL_UARTEx_ReceiveToIdle_DMA &rArr; UART_Start_Receive_DMA &rArr; HAL_DMA_Start_IT &rArr; DMA_SetConfig
+</UL>
+<BR>[Calls]<UL><LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_ErrorCallback
 </UL>
 <BR>[Address Reference Count : 2]<UL><LI> stm32h7xx_hal_uart.o(.text.HAL_UART_Transmit_DMA)
 <LI> stm32h7xx_hal_uart.o(.text.UART_Start_Receive_DMA)
@@ -2616,7 +2625,9 @@ Local Symbols
 <BR>[Address Reference Count : 1]<UL><LI> stm32h7xx_hal_uart.o(.text.UART_Start_Receive_DMA)
 </UL>
 <P><STRONG><a name="[96]"></a>UART_DMAAbortOnError</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, stm32h7xx_hal_uart.o(.text.UART_DMAAbortOnError))
-<BR><BR>[Calls]<UL><LI><a href="#[10d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_ErrorCallback
+<BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = UART_DMAAbortOnError &rArr; HAL_UART_ErrorCallback &rArr; HAL_UARTEx_ReceiveToIdle_DMA &rArr; UART_Start_Receive_DMA &rArr; HAL_DMA_Start_IT &rArr; DMA_SetConfig
+</UL>
+<BR>[Calls]<UL><LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_ErrorCallback
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> stm32h7xx_hal_uart.o(.text.HAL_UART_IRQHandler)
 </UL>
@@ -2727,7 +2738,7 @@ Local Symbols
 <LI><a href="#[13b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_kfs
 <LI><a href="#[13d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;esc_update
 </UL>
-<BR>[Called By]<UL><LI><a href="#[156]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;score_update
+<BR>[Called By]<UL><LI><a href="#[14f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;score_update
 </UL>
 <P>
 <H3>

@@ -163,7 +163,7 @@ int8_t rc_send_frame(const char *cmd)
     /* 锁定发送, 记录时刻 */
     wait_ack = 1;
     retry_count = 0;
-    send_tick = HAL_GetTick();
+    send_tick = osKernelGetTickCount();
 
     return 0;
 }
@@ -189,13 +189,13 @@ void rc_tx_poll(void)
         return;
     }
 
-    uint32_t elapsed = HAL_GetTick() - send_tick;
+    uint32_t elapsed = osKernelGetTickCount() - send_tick;
 
     if (elapsed >= RC_ACK_TIMEOUT_MS) {
         if (retry_count < RC_ACK_MAX_RETRY) {
             /* 重发 (DMA非阻塞) */
             retry_count++;
-            send_tick = HAL_GetTick();
+            send_tick = osKernelGetTickCount();
 
             uint16_t len = (uint16_t)strlen(pending_cmd);
             dma_tx_buf[0] = 'R';
@@ -261,6 +261,28 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
     if (huart->Instance == USART6) {
         dma_tx_busy = 0;
     }
+}
+
+/**
+ * @brief UART 错误回调
+ *        当 USART6 发生帧错误/噪声错误/溢出错误时，HAL 会中止 DMA 接收。
+ *        此回调负责重新启动 DMA 接收并重置状态机，防止串口永久失联。
+ * @note  此函数为 HAL weak 函数重写
+ */
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance != USART6) {
+        return;
+    }
+
+    /* 重新启动 DMA 接收 (重置 ping-pong 索引, 确保与 DMA 目标一致) */
+    rx_buf_idx = 0;
+    HAL_UARTEx_ReceiveToIdle_DMA(&huart6, rc_dma_buf[0], RC_RX_DMA_SIZE);
+    __HAL_DMA_DISABLE_IT(huart6.hdmarx, DMA_IT_HT);
+
+    /* 重置状态机，丢弃残留半帧 */
+    rx_state = RC_STATE_WAIT_R;
+    cmd_len = 0;
 }
 
 /* ======================== 状态机内部实现 ======================== */

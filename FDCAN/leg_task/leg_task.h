@@ -2,12 +2,12 @@
 #define __LEG_TASK_H
 
 #include <stdbool.h>
-
+#include "stdint.h"
 /* ======================== 比赛模式宏 ======================== */
 #define MATCH_MODE_NORMAL  0   /* 正常模式 */
 #define MATCH_MODE_PRELIM  1   /* 预选赛2红方 */
 #define MATCH_MODE_BLUE   -1   /* 预选赛2蓝区(左右互换) */
-#define MATCH_MODE  MATCH_MODE_PRELIM   /* 发布时改为 1 或 -1 */
+#define MATCH_MODE  MATCH_MODE_NORMAL   /* 发布时改为 1 或 -1 */
 
 /* ======================== 任务函数声明 ======================== */
 

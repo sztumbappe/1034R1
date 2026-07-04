@@ -40,6 +40,7 @@ typedef enum {
     PRELIM_LRECALL_RELEASE,    /* 左收②: 开阀释放300ms */
     PRELIM_LRECALL_CYL_IN,     /* 左收③: 气缸缩回+100ms */
     PRELIM_LRECALL_RIGHT_PREP, /* 左收④: 对侧臂转±90°+关阀吸气+伸气缸 */
+    PRELIM_ROUTLAY_CYL_IN,     /* 右伸: 先收气缸→到位后伸出 */
 } score_state_t;
 
 /* ======================== 内部变量 ======================== */
@@ -254,12 +255,12 @@ static void arm_sm_update(uint8_t idx)
         break;
 
     case PRELIM_LRECALL_RELEASE:
-        /* ② 开电磁阀释放300ms */
+        /* ② 开电磁阀释放500ms */
         if (enter_tick[idx] == 0) {
             enter_tick[idx] = now;
             relay_vacuum_on(idx + 1);
         }
-        if (now - enter_tick[idx] >= 300) {
+        if (now - enter_tick[idx] >= 500) {
             state[idx] = PRELIM_LRECALL_CYL_IN;
             enter_tick[idx] = 0;
         }
@@ -294,6 +295,18 @@ static void arm_sm_update(uint8_t idx)
 #endif
         state[idx] = SCORE_IDLE;
         break;
+
+    case PRELIM_ROUTLAY_CYL_IN:
+        /* 先收气缸, 等200ms后衔接正常放料流程 */
+        if (enter_tick[idx] == 0) {
+            enter_tick[idx] = now;
+            relay_cylinder_retract(idx + 1);
+        }
+        if (now - enter_tick[idx] >= 200) {
+            state[idx] = SCORE_OUTLAY_WAIT_HEIGHT;
+            enter_tick[idx] = 0;
+        }
+        break;
 #endif /* MATCH_MODE != MATCH_MODE_NORMAL */
 
     default:
@@ -316,8 +329,37 @@ static float height_to_target(uint16_t param)
 }
 
 /* ======================== 指令派发 ======================== */
+
+/* 判断指令是否会触发灵足运动 (改变 arm_close 或触发相关状态机) */
+static uint8_t cmd_triggers_gimbal(rc_cmd_type_t type)
+{
+    switch (type) {
+    case RC_CMD_ATAKE:
+    case RC_CMD_BTAKE:
+    case RC_CMD_RKFS:
+    case RC_CMD_LKFS:
+    case RC_CMD_RABSORB:
+    case RC_CMD_LABSORB:
+    case RC_CMD_LRECALL:
+    case RC_CMD_RRECALL:
+    case RC_CMD_LOUTLAY:
+    case RC_CMD_ROUTLAY:
+    case RC_CMD_TRIGGER:
+    case RC_CMD_KFS:
+        return 1;
+    default:
+        return 0;
+    }
+}
+
 static void dispatch_cmd(const rc_cmd_t *cmd)
 {
+    /* 触发灵足运动的指令 → 退出 R2预备/进攻模式, 灵足恢复正常控制 */
+    if (cmd_triggers_gimbal(cmd->type)) {
+        r2ready_mode = 0;
+        atready_mode = 0;
+    }
+
     switch (cmd->type) {
 
     // /* ---- 半自动: 取料/存料 ---- */        //先取右臂后取左
@@ -476,14 +518,18 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
         enter_tick[0] = 0;
 #elif MATCH_MODE == MATCH_MODE_PRELIM
         /* 红方左收: 4步状态机 (气缸出→释放→气缸缩→右臂预备) */
-        arm_init = 1;
-        state[0] = PRELIM_LRECALL_CYL_OUT;
-        enter_tick[0] = 0;
+        if (state[0] == SCORE_IDLE) {  /* 防重复触发 */
+            arm_init = 1;
+            state[0] = PRELIM_LRECALL_CYL_OUT;
+            enter_tick[0] = 0;
+        }
 #elif MATCH_MODE == MATCH_MODE_BLUE
         /* 蓝方左收: 镜像红方左收, 运行在右臂(arm1) */
-        arm_init = 1;
-        state[1] = PRELIM_LRECALL_CYL_OUT;
-        enter_tick[1] = 0;
+        if (state[1] == SCORE_IDLE) {  /* 防重复触发 */
+            arm_init = 1;
+            state[1] = PRELIM_LRECALL_CYL_OUT;
+            enter_tick[1] = 0;
+        }
 #endif
         break;
 
@@ -494,20 +540,24 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
         enter_tick[1] = 0;
 #elif MATCH_MODE == MATCH_MODE_PRELIM
         /* 红方右收: 双灵足前伸 + 左保KFS + 右降到底 */
-        arm_init = 1;
-        arm_close[0] = 0;
-        arm_close[1] = 0;
-        target_red = kfs_height_red;
-        target_blue = 1;
-        state[1] = SCORE_IDLE;
+        if (state[1] == SCORE_IDLE) {  /* 防重复触发 */
+            arm_init = 1;
+            arm_close[0] = 0;
+            arm_close[1] = 0;
+            target_red = kfs_height_red;
+            target_blue = 1;
+            state[1] = SCORE_IDLE;
+        }
 #elif MATCH_MODE == MATCH_MODE_BLUE
         /* 蓝方右收: 镜像红方右收 (右保KFS + 左降到底) */
-        arm_init = 1;
-        arm_close[0] = 0;
-        arm_close[1] = 0;
-        target_blue = kfs_height_blue;
-        target_red = 1;
-        state[0] = SCORE_IDLE;
+        if (state[0] == SCORE_IDLE) {  /* 防重复触发 */
+            arm_init = 1;
+            arm_close[0] = 0;
+            arm_close[1] = 0;
+            target_blue = kfs_height_blue;
+            target_red = 1;
+            state[0] = SCORE_IDLE;
+        }
 #endif
         break;
 
@@ -517,7 +567,12 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
         prelim_prep_flag[0] = 0;  /* 清除预备标志, 让 arm_close 接管 */
         prelim_prep_flag[1] = 0;
 #endif
+#if MATCH_MODE == MATCH_MODE_BLUE
+        /* 蓝方左伸: 先收气缸 → 到位后伸出 */
+        state[0] = PRELIM_ROUTLAY_CYL_IN;
+#else
         state[0] = SCORE_OUTLAY_WAIT_HEIGHT;
+#endif
         enter_tick[0] = 0;
         break;
 
@@ -527,7 +582,12 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
         prelim_prep_flag[0] = 0;  /* 清除预备标志, 让 arm_close 接管 */
         prelim_prep_flag[1] = 0;
 #endif
+#if MATCH_MODE == MATCH_MODE_PRELIM
+        /* 红方右伸: 先收气缸 → 到位后伸出 */
+        state[1] = PRELIM_ROUTLAY_CYL_IN;
+#else
         state[1] = SCORE_OUTLAY_WAIT_HEIGHT;
+#endif
         enter_tick[1] = 0;
         break;
 
@@ -535,16 +595,16 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
     case RC_CMD_R2READY:
         r2ready_mode = 1;
         atready_mode = 0;
-        // target_red = 4;    /* 两臂升到600 */
-        // target_blue = 4;
+        target_red = 4;    /* 两臂升到600 */
+        target_blue = 4;
         break;
 
     /* ---- R1进攻姿态 ---- */
     case RC_CMD_ATREADY:
         atready_mode = 1;
         r2ready_mode = 0;
-        // target_red = 4;    /* 两臂升到600 */
-        // target_blue = 4;
+        target_red = 4;    /* 两臂升到600 */
+        target_blue = 4;
         break;
 
     /* ---- 触发1号臂放料准备: 收回+高400 ---- */
