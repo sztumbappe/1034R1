@@ -1,4 +1,4 @@
-﻿//
+//
 // rc_protocol.c
 // RC 串口通信协议模块
 // 使用 USART6 DMA 接收 + 状态机解析
@@ -8,7 +8,7 @@
 #include "rc_protocol.h"
 #include "usart.h"
 #include <string.h>
-
+#include "cmsis_os2.h"
 /* ======================== DMA 接收缓冲区 (双缓冲 ping-pong) ======================== */
 static uint8_t rc_dma_buf[2][RC_RX_DMA_SIZE];
 static uint8_t rx_buf_idx = 0;  /* 当前 DMA 正在写入的缓冲区索引 */

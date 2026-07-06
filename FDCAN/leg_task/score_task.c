@@ -204,7 +204,7 @@ static void arm_sm_update(uint8_t idx)
         break;
 
     case SCORE_OUTLAY_WAIT_LEG:
-        /* 等灵足展开到位 或 3秒超时 */
+        /* 等灵足展开到位 或 4秒超时 */
         /* 首帧+20ms跳过，等 lift_control_update 刷新 lift_target */
         if (enter_tick[idx] == 0) {
             enter_tick[idx] = now;
@@ -212,7 +212,7 @@ static void arm_sm_update(uint8_t idx)
         if (now - enter_tick[idx] < 20) {
             break;
         }
-        if (leg_arrived(idx) || (now - enter_tick[idx] >= 3000)) {
+        if (leg_arrived(idx) || (now - enter_tick[idx] >= 4000)) {
             state[idx] = SCORE_OUTLAY_EXTEND;
         }
         break;
@@ -390,7 +390,7 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
     // /* ---- 开场定位 ---- */
     // case RC_CMD_KFS:
     //     arm_init = 1;  /* 收到KFS指令时触发启动 */
-    //     if (cmd->param1 <= 9) {
+    //     if (cmd->param1 <= 9) {·
     //         kfs_height_red = (float)protocol_to_height[cmd->param2];
     //     }
     //     if (cmd->param2 <= 9) {

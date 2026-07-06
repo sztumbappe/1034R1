@@ -24,9 +24,6 @@
 #include "tim.h"
 #include "rc_protocol.h"
 #include "stdint.h"
-/* ======================== 临时继电器气泵 (PA9) ======================== */
-#define PUMP_RELAY_PORT   GPIOA
-#define PUMP_RELAY_PIN    GPIO_PIN_9
 
 /* ======================== 遥控器接口变量 ======================== */
 volatile float target_red  = 4;   /* 1号臂抬升: 1=高100, 2=高200, 3=高400, 4=高600 */
@@ -273,9 +270,6 @@ void leg_task(void *argument)
             /* 5. ESC 电调控制 */
             esc_update();
 
-            /* 5.5 继电器气泵 (临时: PA9, 复用 motor_run_flag) */
-            HAL_GPIO_WritePin(PUMP_RELAY_PORT, PUMP_RELAY_PIN,
-                              motor_run_flag ? GPIO_PIN_SET : GPIO_PIN_RESET);
         }
 
         /* 2. 处理RC指令 (得分状态机) — 始终运行 */

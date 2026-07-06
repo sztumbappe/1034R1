@@ -3,7 +3,7 @@
 <title>Static Call Graph - [FDCAN\FDCAN.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image FDCAN\FDCAN.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6230001: Last Updated: Sun Jul  5 03:13:03 2026
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6230001: Last Updated: Mon Jul  6 04:07:46 2026
 <BR><P>
 <H3>Maximum Stack Usage =        368 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -1183,7 +1183,6 @@ Global Symbols
 <LI><a href="#[133]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UART_WaitOnFlagUntilTimeout
 <LI><a href="#[114]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UART_CheckIdleState
 <LI><a href="#[155]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_goto_target
-<LI><a href="#[150]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
 </UL>
 
 <P><STRONG><a name="[104]"></a>HAL_IncTick</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, stm32h7xx_hal.o(.text.HAL_IncTick))
@@ -1517,8 +1516,8 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[10a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_IRQHandler
 </UL>
 
-<P><STRONG><a name="[109]"></a>HAL_UART_ErrorCallback</STRONG> (Thumb, 306 bytes, Stack size 8 bytes, rc_protocol.o(.text.HAL_UART_ErrorCallback))
-<BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = HAL_UART_ErrorCallback &rArr; HAL_UARTEx_ReceiveToIdle_DMA &rArr; UART_Start_Receive_DMA &rArr; HAL_DMA_Start_IT &rArr; DMA_SetConfig
+<P><STRONG><a name="[109]"></a>HAL_UART_ErrorCallback</STRONG> (Thumb, 310 bytes, Stack size 16 bytes, rc_protocol.o(.text.HAL_UART_ErrorCallback))
+<BR><BR>[Stack]<UL><LI>Max Depth = 56<LI>Call Chain = HAL_UART_ErrorCallback &rArr; HAL_UARTEx_ReceiveToIdle_DMA &rArr; UART_Start_Receive_DMA &rArr; HAL_DMA_Start_IT &rArr; DMA_SetConfig
 </UL>
 <BR>[Calls]<UL><LI><a href="#[105]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UARTEx_ReceiveToIdle_DMA
 </UL>
@@ -1907,7 +1906,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[9b]"></a>leg_task</STRONG> (Thumb, 940 bytes, Stack size 8 bytes, leg_task.o(.text.leg_task))
+<P><STRONG><a name="[9b]"></a>leg_task</STRONG> (Thumb, 948 bytes, Stack size 8 bytes, leg_task.o(.text.leg_task))
 <BR><BR>[Stack]<UL><LI>Max Depth = 216<LI>Call Chain = leg_task &rArr; robstride_init &rArr; osDelay &rArr; vTaskDelay &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[12a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
@@ -2020,6 +2019,7 @@ Global Symbols
 <LI><a href="#[156]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_stall_check
 <LI><a href="#[13b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_kfs
 <LI><a href="#[151]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_poll
+<LI><a href="#[150]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
 <LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
@@ -2082,7 +2082,7 @@ Global Symbols
 <P><STRONG><a name="[150]"></a>rc_tx_poll</STRONG> (Thumb, 194 bytes, Stack size 32 bytes, rc_protocol.o(.text.rc_tx_poll))
 <BR><BR>[Stack]<UL><LI>Max Depth = 64<LI>Call Chain = rc_tx_poll &rArr; HAL_UART_Transmit_DMA &rArr; HAL_DMA_Start_IT &rArr; DMA_SetConfig
 </UL>
-<BR>[Calls]<UL><LI><a href="#[c4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
+<BR>[Calls]<UL><LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osKernelGetTickCount
 <LI><a href="#[116]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_Transmit_DMA
 <LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_Transmit
 <LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
@@ -2601,7 +2601,7 @@ Local Symbols
 <BR>[Address Reference Count : 1]<UL><LI> stm32h7xx_hal_uart.o(.text.HAL_UART_Transmit_DMA)
 </UL>
 <P><STRONG><a name="[99]"></a>UART_DMAError</STRONG> (Thumb, 500 bytes, Stack size 0 bytes, stm32h7xx_hal_uart.o(.text.UART_DMAError))
-<BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = UART_DMAError &rArr; HAL_UART_ErrorCallback &rArr; HAL_UARTEx_ReceiveToIdle_DMA &rArr; UART_Start_Receive_DMA &rArr; HAL_DMA_Start_IT &rArr; DMA_SetConfig
+<BR><BR>[Stack]<UL><LI>Max Depth = 56<LI>Call Chain = UART_DMAError &rArr; HAL_UART_ErrorCallback &rArr; HAL_UARTEx_ReceiveToIdle_DMA &rArr; UART_Start_Receive_DMA &rArr; HAL_DMA_Start_IT &rArr; DMA_SetConfig
 </UL>
 <BR>[Calls]<UL><LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_ErrorCallback
 </UL>
@@ -2625,7 +2625,7 @@ Local Symbols
 <BR>[Address Reference Count : 1]<UL><LI> stm32h7xx_hal_uart.o(.text.UART_Start_Receive_DMA)
 </UL>
 <P><STRONG><a name="[96]"></a>UART_DMAAbortOnError</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, stm32h7xx_hal_uart.o(.text.UART_DMAAbortOnError))
-<BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = UART_DMAAbortOnError &rArr; HAL_UART_ErrorCallback &rArr; HAL_UARTEx_ReceiveToIdle_DMA &rArr; UART_Start_Receive_DMA &rArr; HAL_DMA_Start_IT &rArr; DMA_SetConfig
+<BR><BR>[Stack]<UL><LI>Max Depth = 56<LI>Call Chain = UART_DMAAbortOnError &rArr; HAL_UART_ErrorCallback &rArr; HAL_UARTEx_ReceiveToIdle_DMA &rArr; UART_Start_Receive_DMA &rArr; HAL_DMA_Start_IT &rArr; DMA_SetConfig
 </UL>
 <BR>[Calls]<UL><LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_ErrorCallback
 </UL>
@@ -2728,7 +2728,7 @@ Local Symbols
 <BR>[Called By]<UL><LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UARTEx_RxEventCallback
 </UL>
 
-<P><STRONG><a name="[13a]"></a>arm_sm_update</STRONG> (Thumb, 740 bytes, Stack size 24 bytes, score_task.o(.text.arm_sm_update))
+<P><STRONG><a name="[13a]"></a>arm_sm_update</STRONG> (Thumb, 736 bytes, Stack size 24 bytes, score_task.o(.text.arm_sm_update))
 <BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = arm_sm_update &rArr; relay_pickup_kfs &rArr; osKernelGetTickCount &rArr; xTaskGetTickCountFromISR
 </UL>
 <BR>[Calls]<UL><LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osKernelGetTickCount
