@@ -3,13 +3,7 @@
 
 #include <stdbool.h>
 #include "stdint.h"
-/* ======================== 比赛模式宏 ======================== */
-#define MATCH_MODE_NORMAL  0   /* 正常模式 */
-#define MATCH_MODE_PRELIM  1   /* 预选赛2红方 */
-#define MATCH_MODE_PRELIM3  2   /* 预选赛3: 右臂存料只抬升不收灵足 */
-#define MATCH_MODE_DEBUG    3   /* 正式赛调试模式: 上电双臂预装KFS */
-#define MATCH_MODE_BLUE   -1   /* 预选赛2蓝区(左右互换) */
-#define MATCH_MODE  MATCH_MODE_DEBUG /* 发布时改为 1 / -1 / 2 / 3 */
+#include "main.h"   /* MATCH_MODE* 宏定义在 main.h (USER CODE 块) */
 
 /* ======================== 任务函数声明 ======================== */
 

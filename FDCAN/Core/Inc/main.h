@@ -59,7 +59,13 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 
 /* USER CODE BEGIN Private defines */
-
+/* ======================== 比赛模式宏 ======================== */
+#define MATCH_MODE_NORMAL  0   /* 正常模式 */
+#define MATCH_MODE_PRELIM  1   /* 九宫藏宝预选赛2红方 */
+#define MATCH_MODE_PRELIM3 2   /* 崇武探幽预选赛3: 右臂存料只抬升不收灵足 */
+#define MATCH_MODE_DEBUG   3   /* 调试模式: 上电双臂预装KFS */
+#define MATCH_MODE_BLUE   -1   /* 九宫藏宝预选赛2蓝区(左右互换) */
+#define MATCH_MODE  MATCH_MODE_DEBUG /* 发布时改为 1 / -1 / 2 / 3 */
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

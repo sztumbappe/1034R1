@@ -727,7 +727,7 @@ void robstride_goto_init(float tgt, uint8_t motor_idx)
     const float EPS     = 0.004f;
     const float ALPHA   = 0.05f;   /* 慢速目标平滑 */
     const float DT      = 0.002f;
-    const float Kp      = 20.0f;   /* 低增益 */
+    const float Kp      = 50.0f;   /* 低增益 */
     const float Kd      = 4.5f;
 
     if (motor_idx > 1) return;
@@ -787,8 +787,11 @@ void robstride_goto_target(float tgt, uint8_t motor_idx)
     const float WRIST_ANGLE_EPS = 0.004f;
     const float STABLE_ALPHA    = 0.10f;
     const float DT              = 0.002f;
-    const float Kp              = 100.0f;
-    const float Kd              = 4.5f;
+    /* 分级锁力: 运动时低增益平滑, 到位后高增益锁定抗冲击 */
+    const float Kp_move         = 100.0f;    /* 运动期间: 平滑低增益 */
+    const float Kp_hold         = 300.0f;    /* 到位保持: 高刚度锁定 */
+    const float Kd              = 5.0f;      /* 全程最大阻尼 (硬件上限5.0) */
+    const float HOLD_TRANSITION = 0.10f;    /* 过渡带宽度 (rad, ~5.7°) */
 
     /* 注意: rob_stable_target/rob_goto_init 定义在文件顶部，支持 reset */
 
@@ -856,6 +859,10 @@ void robstride_goto_target(float tgt, uint8_t motor_idx)
 
     /* 速度前馈 */
     float dummy_speed = robstride_clampf(delta_total / DT, -MAX_WRIST_SPEED, MAX_WRIST_SPEED);
+
+    /* 分级锁力: 根据到位比例平滑切换 Kp */
+    float hold_ratio = robstride_clampf(1.0f - abs_rem / HOLD_TRANSITION, 0.0f, 1.0f);
+    float Kp = Kp_move + (Kp_hold - Kp_move) * hold_ratio;
 
     float torque_ff = K_GRAVITY[motor_idx];
     /* 发送MIT运控指令 (带重力补偿) */
