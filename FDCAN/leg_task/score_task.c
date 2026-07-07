@@ -204,7 +204,7 @@ static void arm_sm_update(uint8_t idx)
         break;
 
     case SCORE_OUTLAY_WAIT_LEG:
-        /* 等灵足展开到位 或 4秒超时 */
+        /* 等灵足展开到位 或 3  秒超时 */
         /* 首帧+20ms跳过，等 lift_control_update 刷新 lift_target */
         if (enter_tick[idx] == 0) {
             enter_tick[idx] = now;
@@ -212,7 +212,8 @@ static void arm_sm_update(uint8_t idx)
         if (now - enter_tick[idx] < 20) {
             break;
         }
-        if (leg_arrived(idx) || (now - enter_tick[idx] >= 4000)) {
+        /* 双路到位检测 + 超时保护 */
+        if ((lift_arrived(idx) && leg_arrived(idx)) || (now - enter_tick[idx] >= 3000)) {
             state[idx] = SCORE_OUTLAY_EXTEND;
         }
         break;
@@ -279,30 +280,33 @@ static void arm_sm_update(uint8_t idx)
         break;
 
     case PRELIM_LRECALL_RIGHT_PREP:
-        /* ④ 对侧臂转±90° + 关阀吸气 + 气缸伸出 → IDLE */
+        /* ④ 对侧臂转±90° + 关阀吸气 → IDLE */
 #if MATCH_MODE == MATCH_MODE_PRELIM
-        /* 红方: 右臂(arm1) → -90°(-1.57f) + 吸气 + 气缸伸出 */
+        /* 红方: 右臂(arm1) → -90°(-1.57f) + 吸气 */
         prelim_prep_flag[1] = 1;
         prelim_prep_angle[1] = -1.57f;
         relay_vacuum_off(2);
-        relay_cylinder_extend(2);
 #elif MATCH_MODE == MATCH_MODE_BLUE
-        /* 蓝方: 左臂(arm0) → +90°(+1.57f) + 吸气 + 气缸伸出 */
+        /* 蓝方: 左臂(arm0) → +90°(+1.57f) + 吸气 */
         prelim_prep_flag[0] = 1;
         prelim_prep_angle[0] = 1.57f;
         relay_vacuum_off(1);
-        relay_cylinder_extend(1);
 #endif
         state[idx] = SCORE_IDLE;
         break;
 
     case PRELIM_ROUTLAY_CYL_IN:
-        /* 先收气缸, 等200ms后衔接正常放料流程 */
+        /* 设目标高度抬升200ms → 收气缸 → 衔接正常放料 */
         if (enter_tick[idx] == 0) {
             enter_tick[idx] = now;
-            relay_cylinder_retract(idx + 1);
+            if (idx == 0) {
+                target_red = 4;
+            } else {
+                target_blue = 4;
+            }
         }
         if (now - enter_tick[idx] >= 200) {
+            relay_cylinder_retract(idx + 1);
             state[idx] = SCORE_OUTLAY_WAIT_HEIGHT;
             enter_tick[idx] = 0;
         }

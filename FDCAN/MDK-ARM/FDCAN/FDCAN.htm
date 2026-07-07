@@ -3,7 +3,7 @@
 <title>Static Call Graph - [FDCAN\FDCAN.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image FDCAN\FDCAN.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6230001: Last Updated: Mon Jul  6 04:07:46 2026
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6230001: Last Updated: Tue Jul  7 04:27:33 2026
 <BR><P>
 <H3>Maximum Stack Usage =        368 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -1163,10 +1163,9 @@ Global Symbols
 <LI><a href="#[11d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_GPIO_Init
 <LI><a href="#[13c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_cylinder_retract
 <LI><a href="#[13f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_cylinder_extend
-<LI><a href="#[154]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_vacuum_on
 <LI><a href="#[13b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_kfs
+<LI><a href="#[154]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_vacuum_on
 <LI><a href="#[151]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_poll
-<LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
 <P><STRONG><a name="[c4]"></a>HAL_GetTick</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, stm32h7xx_hal.o(.text.HAL_GetTick))
@@ -1906,19 +1905,18 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[9b]"></a>leg_task</STRONG> (Thumb, 948 bytes, Stack size 8 bytes, leg_task.o(.text.leg_task))
+<P><STRONG><a name="[9b]"></a>leg_task</STRONG> (Thumb, 952 bytes, Stack size 8 bytes, leg_task.o(.text.leg_task))
 <BR><BR>[Stack]<UL><LI>Max Depth = 216<LI>Call Chain = leg_task &rArr; robstride_init &rArr; osDelay &rArr; vTaskDelay &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[12a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
-<LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 <LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osKernelGetTickCount
 <LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CAN_CMD_RM
 <LI><a href="#[158]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_goto_init
+<LI><a href="#[13b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_kfs
 <LI><a href="#[157]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_goto_target
 <LI><a href="#[156]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_stall_check
 <LI><a href="#[155]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_goto_target
 <LI><a href="#[154]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_vacuum_on
-<LI><a href="#[13b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_kfs
 <LI><a href="#[153]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_restart
 <LI><a href="#[152]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_update_debug
 <LI><a href="#[151]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_poll
@@ -2016,8 +2014,8 @@ Global Symbols
 </UL>
 <BR>[Called By]<UL><LI><a href="#[cd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FDCAN_RxFifo0Callback
 <LI><a href="#[13a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;arm_sm_update
-<LI><a href="#[156]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_stall_check
 <LI><a href="#[13b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_kfs
+<LI><a href="#[156]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_stall_check
 <LI><a href="#[151]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_poll
 <LI><a href="#[150]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
 <LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
@@ -2728,7 +2726,7 @@ Local Symbols
 <BR>[Called By]<UL><LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UARTEx_RxEventCallback
 </UL>
 
-<P><STRONG><a name="[13a]"></a>arm_sm_update</STRONG> (Thumb, 736 bytes, Stack size 24 bytes, score_task.o(.text.arm_sm_update))
+<P><STRONG><a name="[13a]"></a>arm_sm_update</STRONG> (Thumb, 756 bytes, Stack size 24 bytes, score_task.o(.text.arm_sm_update))
 <BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = arm_sm_update &rArr; relay_pickup_kfs &rArr; osKernelGetTickCount &rArr; xTaskGetTickCountFromISR
 </UL>
 <BR>[Calls]<UL><LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osKernelGetTickCount

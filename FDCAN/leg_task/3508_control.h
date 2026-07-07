@@ -50,13 +50,13 @@ typedef struct {
 #define LIFT_RED_POS0       (894114)             /* 高100*/
 #define LIFT_RED_POS1       (298515)        /* 高200 */
 #define LIFT_RED_POS2       (-442819)       /* 高400 */
-#define LIFT_RED_POS3       (-1015026)      /* 高600 */
+#define LIFT_RED_POS3       (-1035026)      /* 高600 */
 
 /* 2号臂 2006 (control_3508_classic[1]) */
 #define LIFT_BLUE_POS0      (-881435)             /* 高100*/
 #define LIFT_BLUE_POS1      (-110926)        /* 高200 */      //正常是-150000，预选赛位置偏下
 #define LIFT_BLUE_POS2      (430772)       /* 高400 */
-#define LIFT_BLUE_POS3      (1012170)      /* 高600 */
+#define LIFT_BLUE_POS3      (1032170)      /* 高600 */
 
 /* ======================== PID函数 ======================== */
 
