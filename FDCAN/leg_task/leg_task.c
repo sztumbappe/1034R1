@@ -68,7 +68,7 @@ static void leg_hw_init(void)
     lift_init();                 // 记录双2006上电零点
 
 #if MATCH_MODE == MATCH_MODE_PRELIM || MATCH_MODE == MATCH_MODE_BLUE || MATCH_MODE == MATCH_MODE_DEBUG
-    /* ---- 预选赛2/调试模式: 预存KFS高度 + 自动开泵 + 指定侧吸气 ---- */
+    /* ---- 预选赛/调试模式: 预存KFS高度 + 自动开泵 + 吸气 ---- */
     score_preset_kfs_height(4, 4);
     motor_run_flag = 1;
     esc_update();
@@ -77,10 +77,10 @@ static void leg_hw_init(void)
 #elif MATCH_MODE == MATCH_MODE_BLUE
     relay_vacuum_off(2);   /* 蓝方: 右臂断电→吸气, 操作员手动放KFS */
 #elif MATCH_MODE == MATCH_MODE_DEBUG
-    relay_vacuum_off(1);   /* 调试模式: 双臂断电→吸气, 操作员手动放KFS */
+    relay_vacuum_off(1);   /* 调试模式: 双臂断电→吸气 */
     relay_vacuum_off(2);
 #endif
-    /* arm_init 保持 0, 等首次 ROUTLAY/LOUTLAY/RRECALL/LRECALL 时置 1 */
+    /* arm_init 保持 0, 等首次 LAuto/RAuto/LOUTLAY/ROUTLAY 时置 1 */
 #endif
 }
 
@@ -102,7 +102,7 @@ static float get_lift_pos(volatile float *target, float pos0, float pos1, float 
 static void arm_gimbal_update(uint8_t idx)
 {
 #if MATCH_MODE == MATCH_MODE_PRELIM || MATCH_MODE == MATCH_MODE_BLUE
-    /* 预选赛2灵足预备: LRECALL步骤④强制对侧臂到预备角度 */
+    /* 预选赛灵足预备: LAuto00/RAuto00强制臂到±90° */
     if (prelim_prep_flag[idx]) {
         robstride_goto_target(prelim_prep_angle[idx], idx);
         return;

@@ -3,7 +3,7 @@
 <title>Static Call Graph - [FDCAN\FDCAN.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image FDCAN\FDCAN.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6230001: Last Updated: Tue Jul  7 21:06:20 2026
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6230001: Last Updated: Wed Jul  8 01:50:29 2026
 <BR><P>
 <H3>Maximum Stack Usage =        368 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -751,11 +751,11 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = strlen
 </UL>
 <BR>[Called By]<UL><LI><a href="#[108]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;match_prefix
-<LI><a href="#[152]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
+<LI><a href="#[153]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
 </UL>
 
 <P><STRONG><a name="[17e]"></a>__aeabi_memcpy</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, rt_memcpy_v6.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[152]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
+<BR><BR>[Called By]<UL><LI><a href="#[153]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
 <LI><a href="#[178]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueReceive
 <LI><a href="#[176]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
 </UL>
@@ -871,7 +871,7 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FDCAN_AddMessageToTxFifoQ
 </UL>
 <BR>[Called By]<UL><LI><a href="#[157]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_goto_target
-<LI><a href="#[140]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;di3508_r2control_Begin
+<LI><a href="#[142]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;di3508_r2control_Begin
 <LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 <LI><a href="#[9a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Raise_task
 <LI><a href="#[12e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;di3508_r2control
@@ -975,8 +975,8 @@ Global Symbols
 <LI><a href="#[116]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_Transmit_DMA
 </UL>
 
-<P><STRONG><a name="[147]"></a>HAL_FDCAN_ActivateNotification</STRONG> (Thumb, 138 bytes, Stack size 0 bytes, stm32h7xx_hal_fdcan.o(.text.HAL_FDCAN_ActivateNotification))
-<BR><BR>[Called By]<UL><LI><a href="#[144]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fdcan_config
+<P><STRONG><a name="[149]"></a>HAL_FDCAN_ActivateNotification</STRONG> (Thumb, 138 bytes, Stack size 0 bytes, stm32h7xx_hal_fdcan.o(.text.HAL_FDCAN_ActivateNotification))
+<BR><BR>[Called By]<UL><LI><a href="#[146]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fdcan_config
 </UL>
 
 <P><STRONG><a name="[c0]"></a>HAL_FDCAN_AddMessageToTxFifoQ</STRONG> (Thumb, 234 bytes, Stack size 28 bytes, stm32h7xx_hal_fdcan.o(.text.HAL_FDCAN_AddMessageToTxFifoQ))
@@ -985,23 +985,23 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CAN_CMD_RM
 <LI><a href="#[12f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RobStrite_Motor_05_move_control
 <LI><a href="#[15a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_goto_init
-<LI><a href="#[155]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_restart
-<LI><a href="#[150]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_keepalive
-<LI><a href="#[14b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_init
+<LI><a href="#[156]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_restart
+<LI><a href="#[151]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_keepalive
+<LI><a href="#[14d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_init
 </UL>
 
 <P><STRONG><a name="[cb]"></a>HAL_FDCAN_ClockCalibrationCallback</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32h7xx_hal_fdcan.o(.text.HAL_FDCAN_ClockCalibrationCallback))
 <BR><BR>[Called By]<UL><LI><a href="#[c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FDCAN_IRQHandler
 </UL>
 
-<P><STRONG><a name="[145]"></a>HAL_FDCAN_ConfigFilter</STRONG> (Thumb, 140 bytes, Stack size 8 bytes, stm32h7xx_hal_fdcan.o(.text.HAL_FDCAN_ConfigFilter))
+<P><STRONG><a name="[147]"></a>HAL_FDCAN_ConfigFilter</STRONG> (Thumb, 140 bytes, Stack size 8 bytes, stm32h7xx_hal_fdcan.o(.text.HAL_FDCAN_ConfigFilter))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = HAL_FDCAN_ConfigFilter
 </UL>
-<BR>[Called By]<UL><LI><a href="#[144]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fdcan_config
+<BR>[Called By]<UL><LI><a href="#[146]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fdcan_config
 </UL>
 
-<P><STRONG><a name="[146]"></a>HAL_FDCAN_ConfigGlobalFilter</STRONG> (Thumb, 56 bytes, Stack size 0 bytes, stm32h7xx_hal_fdcan.o(.text.HAL_FDCAN_ConfigGlobalFilter))
-<BR><BR>[Called By]<UL><LI><a href="#[144]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fdcan_config
+<P><STRONG><a name="[148]"></a>HAL_FDCAN_ConfigGlobalFilter</STRONG> (Thumb, 56 bytes, Stack size 0 bytes, stm32h7xx_hal_fdcan.o(.text.HAL_FDCAN_ConfigGlobalFilter))
+<BR><BR>[Called By]<UL><LI><a href="#[146]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fdcan_config
 </UL>
 
 <P><STRONG><a name="[d5]"></a>HAL_FDCAN_ErrorCallback</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32h7xx_hal_fdcan.o(.text.HAL_FDCAN_ErrorCallback))
@@ -1098,8 +1098,8 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FDCAN_IRQHandler
 </UL>
 
-<P><STRONG><a name="[148]"></a>HAL_FDCAN_Start</STRONG> (Thumb, 52 bytes, Stack size 0 bytes, stm32h7xx_hal_fdcan.o(.text.HAL_FDCAN_Start))
-<BR><BR>[Called By]<UL><LI><a href="#[144]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fdcan_config
+<P><STRONG><a name="[14a]"></a>HAL_FDCAN_Start</STRONG> (Thumb, 52 bytes, Stack size 0 bytes, stm32h7xx_hal_fdcan.o(.text.HAL_FDCAN_Start))
+<BR><BR>[Called By]<UL><LI><a href="#[146]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fdcan_config
 </UL>
 
 <P><STRONG><a name="[d9]"></a>HAL_FDCAN_TT_GlobalTimeCallback</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32h7xx_hal_fdcan.o(.text.HAL_FDCAN_TT_GlobalTimeCallback))
@@ -1161,12 +1161,12 @@ Global Symbols
 <P><STRONG><a name="[11e]"></a>HAL_GPIO_WritePin</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, stm32h7xx_hal_gpio.o(.text.HAL_GPIO_WritePin))
 <BR><BR>[Called By]<UL><LI><a href="#[160]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_init
 <LI><a href="#[11d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_GPIO_Init
-<LI><a href="#[13e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_cylinder_retract
-<LI><a href="#[13f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_cylinder_extend
+<LI><a href="#[141]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_cylinder_retract
+<LI><a href="#[13c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_cylinder_extend
 <LI><a href="#[13b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_kfs
-<LI><a href="#[156]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_vacuum_on
-<LI><a href="#[153]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_poll
-<LI><a href="#[14e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_vacuum_off
+<LI><a href="#[13d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_vacuum_on
+<LI><a href="#[154]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_poll
+<LI><a href="#[13f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_vacuum_off
 </UL>
 
 <P><STRONG><a name="[c4]"></a>HAL_GetTick</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, stm32h7xx_hal.o(.text.HAL_GetTick))
@@ -1391,8 +1391,8 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_Base_Init
 </UL>
 
-<P><STRONG><a name="[142]"></a>HAL_TIM_Base_Start</STRONG> (Thumb, 212 bytes, Stack size 0 bytes, stm32h7xx_hal_tim.o(.text.HAL_TIM_Base_Start))
-<BR><BR>[Called By]<UL><LI><a href="#[141]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;esc_init
+<P><STRONG><a name="[144]"></a>HAL_TIM_Base_Start</STRONG> (Thumb, 212 bytes, Stack size 0 bytes, stm32h7xx_hal_tim.o(.text.HAL_TIM_Base_Start))
+<BR><BR>[Called By]<UL><LI><a href="#[143]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;esc_init
 </UL>
 
 <P><STRONG><a name="[ee]"></a>HAL_TIM_Base_Start_IT</STRONG> (Thumb, 220 bytes, Stack size 0 bytes, stm32h7xx_hal_tim.o(.text.HAL_TIM_Base_Start_IT))
@@ -1451,10 +1451,10 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[f9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_IRQHandler
 </UL>
 
-<P><STRONG><a name="[143]"></a>HAL_TIM_PWM_Start</STRONG> (Thumb, 368 bytes, Stack size 8 bytes, stm32h7xx_hal_tim.o(.text.HAL_TIM_PWM_Start))
+<P><STRONG><a name="[145]"></a>HAL_TIM_PWM_Start</STRONG> (Thumb, 368 bytes, Stack size 8 bytes, stm32h7xx_hal_tim.o(.text.HAL_TIM_PWM_Start))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = HAL_TIM_PWM_Start
 </UL>
-<BR>[Called By]<UL><LI><a href="#[141]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;esc_init
+<BR>[Called By]<UL><LI><a href="#[143]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;esc_init
 </UL>
 
 <P><STRONG><a name="[fd]"></a>HAL_TIM_PeriodElapsedCallback</STRONG> (Thumb, 14 bytes, Stack size 0 bytes, main.o(.text.HAL_TIM_PeriodElapsedCallback))
@@ -1481,7 +1481,7 @@ Global Symbols
 <LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UARTEx_RxEventCallback
 </UL>
 
-<P><STRONG><a name="[107]"></a>HAL_UARTEx_RxEventCallback</STRONG> (Thumb, 3164 bytes, Stack size 112 bytes, rc_protocol.o(.text.HAL_UARTEx_RxEventCallback))
+<P><STRONG><a name="[107]"></a>HAL_UARTEx_RxEventCallback</STRONG> (Thumb, 3592 bytes, Stack size 112 bytes, rc_protocol.o(.text.HAL_UARTEx_RxEventCallback))
 <BR><BR>[Stack]<UL><LI>Max Depth = 152<LI>Call Chain = HAL_UARTEx_RxEventCallback &rArr; HAL_UARTEx_ReceiveToIdle_DMA &rArr; UART_Start_Receive_DMA &rArr; HAL_DMA_Start_IT &rArr; DMA_SetConfig
 </UL>
 <BR>[Calls]<UL><LI><a href="#[105]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UARTEx_ReceiveToIdle_DMA
@@ -1581,7 +1581,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 </UL>
-<BR>[Called By]<UL><LI><a href="#[152]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
+<BR>[Called By]<UL><LI><a href="#[153]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
 </UL>
 
 <P><STRONG><a name="[116]"></a>HAL_UART_Transmit_DMA</STRONG> (Thumb, 236 bytes, Stack size 8 bytes, stm32h7xx_hal_uart.o(.text.HAL_UART_Transmit_DMA))
@@ -1589,7 +1589,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_DMA_Start_IT
 </UL>
-<BR>[Called By]<UL><LI><a href="#[152]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
+<BR>[Called By]<UL><LI><a href="#[153]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
 </UL>
 
 <P><STRONG><a name="[10c]"></a>HAL_UART_TxCpltCallback</STRONG> (Thumb, 30 bytes, Stack size 0 bytes, rc_protocol.o(.text.HAL_UART_TxCpltCallback))
@@ -1841,7 +1841,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32h723xx.o(RESET)
 </UL>
-<P><STRONG><a name="[14a]"></a>arm_PID_INIT</STRONG> (Thumb, 190 bytes, Stack size 16 bytes, 3508_control.o(.text.arm_PID_INIT))
+<P><STRONG><a name="[14c]"></a>arm_PID_INIT</STRONG> (Thumb, 190 bytes, Stack size 16 bytes, 3508_control.o(.text.arm_PID_INIT))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = arm_PID_INIT
 </UL>
 <BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
@@ -1860,7 +1860,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[9a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Raise_task
 </UL>
 
-<P><STRONG><a name="[140]"></a>di3508_r2control_Begin</STRONG> (Thumb, 64 bytes, Stack size 24 bytes, 3508_control.o(.text.di3508_r2control_Begin))
+<P><STRONG><a name="[142]"></a>di3508_r2control_Begin</STRONG> (Thumb, 64 bytes, Stack size 24 bytes, 3508_control.o(.text.di3508_r2control_Begin))
 <BR><BR>[Stack]<UL><LI>Max Depth = 104<LI>Call Chain = di3508_r2control_Begin &rArr; osDelay &rArr; vTaskDelay &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[12a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
@@ -1879,65 +1879,66 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[9a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Raise_task
 </UL>
 
-<P><STRONG><a name="[141]"></a>esc_init</STRONG> (Thumb, 52 bytes, Stack size 8 bytes, esc_control.o(.text.esc_init))
+<P><STRONG><a name="[143]"></a>esc_init</STRONG> (Thumb, 52 bytes, Stack size 8 bytes, esc_control.o(.text.esc_init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 88<LI>Call Chain = esc_init &rArr; osDelay &rArr; vTaskDelay &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
-<BR>[Calls]<UL><LI><a href="#[143]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_PWM_Start
-<LI><a href="#[142]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_Base_Start
+<BR>[Calls]<UL><LI><a href="#[145]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_PWM_Start
+<LI><a href="#[144]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_Base_Start
 <LI><a href="#[12a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
 </UL>
 <BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
-<P><STRONG><a name="[13d]"></a>esc_update</STRONG> (Thumb, 32 bytes, Stack size 0 bytes, esc_control.o(.text.esc_update))
+<P><STRONG><a name="[13e]"></a>esc_update</STRONG> (Thumb, 32 bytes, Stack size 0 bytes, esc_control.o(.text.esc_update))
 <BR><BR>[Called By]<UL><LI><a href="#[13a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;arm_sm_update
 <LI><a href="#[13b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_kfs
+<LI><a href="#[152]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;score_update
 <LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
-<P><STRONG><a name="[144]"></a>fdcan_config</STRONG> (Thumb, 192 bytes, Stack size 120 bytes, bsp_fdcan.o(.text.fdcan_config))
+<P><STRONG><a name="[146]"></a>fdcan_config</STRONG> (Thumb, 192 bytes, Stack size 120 bytes, bsp_fdcan.o(.text.fdcan_config))
 <BR><BR>[Stack]<UL><LI>Max Depth = 128<LI>Call Chain = fdcan_config &rArr; HAL_FDCAN_ConfigFilter
 </UL>
-<BR>[Calls]<UL><LI><a href="#[147]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FDCAN_ActivateNotification
-<LI><a href="#[148]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FDCAN_Start
-<LI><a href="#[146]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FDCAN_ConfigGlobalFilter
-<LI><a href="#[145]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FDCAN_ConfigFilter
+<BR>[Calls]<UL><LI><a href="#[149]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FDCAN_ActivateNotification
+<LI><a href="#[14a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FDCAN_Start
+<LI><a href="#[148]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FDCAN_ConfigGlobalFilter
+<LI><a href="#[147]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FDCAN_ConfigFilter
 </UL>
 <BR>[Called By]<UL><LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[9b]"></a>leg_task</STRONG> (Thumb, 984 bytes, Stack size 8 bytes, leg_task.o(.text.leg_task))
+<P><STRONG><a name="[9b]"></a>leg_task</STRONG> (Thumb, 972 bytes, Stack size 8 bytes, leg_task.o(.text.leg_task))
 <BR><BR>[Stack]<UL><LI>Max Depth = 216<LI>Call Chain = leg_task &rArr; robstride_init &rArr; osDelay &rArr; vTaskDelay &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[12a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
 <LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osKernelGetTickCount
 <LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CAN_CMD_RM
 <LI><a href="#[15a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_goto_init
-<LI><a href="#[13b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_kfs
 <LI><a href="#[159]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_goto_target
 <LI><a href="#[158]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_stall_check
 <LI><a href="#[157]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_goto_target
-<LI><a href="#[156]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_vacuum_on
-<LI><a href="#[155]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_restart
-<LI><a href="#[154]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_update_debug
-<LI><a href="#[153]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_poll
-<LI><a href="#[152]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
-<LI><a href="#[151]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;score_update
-<LI><a href="#[150]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_keepalive
-<LI><a href="#[14f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_set_target
-<LI><a href="#[14e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_vacuum_off
-<LI><a href="#[13d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;esc_update
-<LI><a href="#[14d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;score_preset_kfs_height
-<LI><a href="#[14c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_init
-<LI><a href="#[14b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_init
-<LI><a href="#[140]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;di3508_r2control_Begin
-<LI><a href="#[14a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;arm_PID_INIT
-<LI><a href="#[141]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;esc_init
-<LI><a href="#[149]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_goto_reset
+<LI><a href="#[13b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_kfs
+<LI><a href="#[13d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_vacuum_on
+<LI><a href="#[156]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_restart
+<LI><a href="#[155]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_update_debug
+<LI><a href="#[154]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_poll
+<LI><a href="#[153]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
+<LI><a href="#[152]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;score_update
+<LI><a href="#[151]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_keepalive
+<LI><a href="#[150]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_set_target
+<LI><a href="#[13f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_vacuum_off
+<LI><a href="#[13e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;esc_update
+<LI><a href="#[14f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;score_preset_kfs_height
+<LI><a href="#[14e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_init
+<LI><a href="#[14d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_init
+<LI><a href="#[142]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;di3508_r2control_Begin
+<LI><a href="#[14c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;arm_PID_INIT
+<LI><a href="#[143]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;esc_init
+<LI><a href="#[14b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_goto_reset
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> freertos.o(.text.MX_FREERTOS_Init)
 </UL>
-<P><STRONG><a name="[13c]"></a>lift_arrived</STRONG> (Thumb, 84 bytes, Stack size 0 bytes, 3508_control.o(.text.lift_arrived))
+<P><STRONG><a name="[140]"></a>lift_arrived</STRONG> (Thumb, 84 bytes, Stack size 0 bytes, 3508_control.o(.text.lift_arrived))
 <BR><BR>[Called By]<UL><LI><a href="#[13a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;arm_sm_update
 </UL>
 
@@ -1951,11 +1952,11 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
-<P><STRONG><a name="[14c]"></a>lift_init</STRONG> (Thumb, 64 bytes, Stack size 0 bytes, 3508_control.o(.text.lift_init))
+<P><STRONG><a name="[14e]"></a>lift_init</STRONG> (Thumb, 64 bytes, Stack size 0 bytes, 3508_control.o(.text.lift_init))
 <BR><BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
-<P><STRONG><a name="[14f]"></a>lift_set_target</STRONG> (Thumb, 64 bytes, Stack size 0 bytes, 3508_control.o(.text.lift_set_target))
+<P><STRONG><a name="[150]"></a>lift_set_target</STRONG> (Thumb, 64 bytes, Stack size 0 bytes, 3508_control.o(.text.lift_set_target))
 <BR><BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
@@ -1967,7 +1968,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
-<P><STRONG><a name="[154]"></a>lift_update_debug</STRONG> (Thumb, 68 bytes, Stack size 0 bytes, 3508_control.o(.text.lift_update_debug))
+<P><STRONG><a name="[155]"></a>lift_update_debug</STRONG> (Thumb, 68 bytes, Stack size 0 bytes, 3508_control.o(.text.lift_update_debug))
 <BR><BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
@@ -1978,7 +1979,7 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[162]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osKernelStart
 <LI><a href="#[11b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_FREERTOS_Init
 <LI><a href="#[161]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osKernelInitialize
-<LI><a href="#[144]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fdcan_config
+<LI><a href="#[146]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fdcan_config
 <LI><a href="#[160]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_init
 <LI><a href="#[15f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_protocol_init
 <LI><a href="#[11f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_TIM1_Init
@@ -2002,9 +2003,9 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[12c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;vTaskDelay
 </UL>
-<BR>[Called By]<UL><LI><a href="#[14b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_init
-<LI><a href="#[140]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;di3508_r2control_Begin
-<LI><a href="#[141]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;esc_init
+<BR>[Called By]<UL><LI><a href="#[14d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;robstride_init
+<LI><a href="#[142]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;di3508_r2control_Begin
+<LI><a href="#[143]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;esc_init
 <LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 <LI><a href="#[9a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Raise_task
 </UL>
@@ -2017,10 +2018,10 @@ Global Symbols
 </UL>
 <BR>[Called By]<UL><LI><a href="#[cd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FDCAN_RxFifo0Callback
 <LI><a href="#[13a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;arm_sm_update
-<LI><a href="#[13b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_kfs
 <LI><a href="#[158]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_stall_check
-<LI><a href="#[153]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_poll
-<LI><a href="#[152]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
+<LI><a href="#[13b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_kfs
+<LI><a href="#[154]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_poll
+<LI><a href="#[153]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_tx_poll
 <LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
@@ -2059,15 +2060,15 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[181]"></a>rc_clear_new_cmd</STRONG> (Thumb, 14 bytes, Stack size 0 bytes, rc_protocol.o(.text.rc_clear_new_cmd))
-<BR><BR>[Called By]<UL><LI><a href="#[151]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;score_update
+<BR><BR>[Called By]<UL><LI><a href="#[152]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;score_update
 </UL>
 
 <P><STRONG><a name="[180]"></a>rc_get_cmd</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, rc_protocol.o(.text.rc_get_cmd))
-<BR><BR>[Called By]<UL><LI><a href="#[151]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;score_update
+<BR><BR>[Called By]<UL><LI><a href="#[152]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;score_update
 </UL>
 
 <P><STRONG><a name="[17f]"></a>rc_has_new_cmd</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, rc_protocol.o(.text.rc_has_new_cmd))
-<BR><BR>[Called By]<UL><LI><a href="#[151]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;score_update
+<BR><BR>[Called By]<UL><LI><a href="#[152]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;score_update
 </UL>
 
 <P><STRONG><a name="[15f]"></a>rc_protocol_init</STRONG> (Thumb, 308 bytes, Stack size 16 bytes, rc_protocol.o(.text.rc_protocol_init))
@@ -2080,7 +2081,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[152]"></a>rc_tx_poll</STRONG> (Thumb, 194 bytes, Stack size 32 bytes, rc_protocol.o(.text.rc_tx_poll))
+<P><STRONG><a name="[153]"></a>rc_tx_poll</STRONG> (Thumb, 194 bytes, Stack size 32 bytes, rc_protocol.o(.text.rc_tx_poll))
 <BR><BR>[Stack]<UL><LI>Max Depth = 64<LI>Call Chain = rc_tx_poll &rArr; HAL_UART_Transmit_DMA &rArr; HAL_DMA_Start_IT &rArr; DMA_SetConfig
 </UL>
 <BR>[Calls]<UL><LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osKernelGetTickCount
@@ -2092,13 +2093,13 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
-<P><STRONG><a name="[13f]"></a>relay_cylinder_extend</STRONG> (Thumb, 44 bytes, Stack size 0 bytes, relay.o(.text.relay_cylinder_extend))
+<P><STRONG><a name="[13c]"></a>relay_cylinder_extend</STRONG> (Thumb, 44 bytes, Stack size 0 bytes, relay.o(.text.relay_cylinder_extend))
 <BR><BR>[Calls]<UL><LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 </UL>
 <BR>[Called By]<UL><LI><a href="#[13a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;arm_sm_update
 </UL>
 
-<P><STRONG><a name="[13e]"></a>relay_cylinder_retract</STRONG> (Thumb, 44 bytes, Stack size 0 bytes, relay.o(.text.relay_cylinder_retract))
+<P><STRONG><a name="[141]"></a>relay_cylinder_retract</STRONG> (Thumb, 44 bytes, Stack size 0 bytes, relay.o(.text.relay_cylinder_retract))
 <BR><BR>[Calls]<UL><LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 </UL>
 <BR>[Called By]<UL><LI><a href="#[13a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;arm_sm_update
@@ -2117,13 +2118,13 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 <LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osKernelGetTickCount
-<LI><a href="#[13d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;esc_update
+<LI><a href="#[13e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;esc_update
 </UL>
 <BR>[Called By]<UL><LI><a href="#[13a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;arm_sm_update
 <LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
-<P><STRONG><a name="[153]"></a>relay_pickup_poll</STRONG> (Thumb, 162 bytes, Stack size 16 bytes, relay.o(.text.relay_pickup_poll))
+<P><STRONG><a name="[154]"></a>relay_pickup_poll</STRONG> (Thumb, 162 bytes, Stack size 16 bytes, relay.o(.text.relay_pickup_poll))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = relay_pickup_poll &rArr; osKernelGetTickCount &rArr; xTaskGetTickCountFromISR
 </UL>
 <BR>[Calls]<UL><LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
@@ -2132,16 +2133,17 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
-<P><STRONG><a name="[14e]"></a>relay_vacuum_off</STRONG> (Thumb, 44 bytes, Stack size 0 bytes, relay.o(.text.relay_vacuum_off))
+<P><STRONG><a name="[13f]"></a>relay_vacuum_off</STRONG> (Thumb, 44 bytes, Stack size 0 bytes, relay.o(.text.relay_vacuum_off))
 <BR><BR>[Calls]<UL><LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
+<BR>[Called By]<UL><LI><a href="#[13a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;arm_sm_update
+<LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
-<P><STRONG><a name="[156]"></a>relay_vacuum_on</STRONG> (Thumb, 44 bytes, Stack size 0 bytes, relay.o(.text.relay_vacuum_on))
+<P><STRONG><a name="[13d]"></a>relay_vacuum_on</STRONG> (Thumb, 44 bytes, Stack size 0 bytes, relay.o(.text.relay_vacuum_on))
 <BR><BR>[Calls]<UL><LI><a href="#[11e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[151]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;score_update
+<BR>[Called By]<UL><LI><a href="#[13a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;arm_sm_update
 <LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
@@ -2153,7 +2155,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
-<P><STRONG><a name="[149]"></a>robstride_goto_reset</STRONG> (Thumb, 24 bytes, Stack size 0 bytes, robstride.o(.text.robstride_goto_reset))
+<P><STRONG><a name="[14b]"></a>robstride_goto_reset</STRONG> (Thumb, 24 bytes, Stack size 0 bytes, robstride.o(.text.robstride_goto_reset))
 <BR><BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
@@ -2166,7 +2168,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
-<P><STRONG><a name="[14b]"></a>robstride_init</STRONG> (Thumb, 1000 bytes, Stack size 128 bytes, robstride.o(.text.robstride_init))
+<P><STRONG><a name="[14d]"></a>robstride_init</STRONG> (Thumb, 1000 bytes, Stack size 128 bytes, robstride.o(.text.robstride_init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 208<LI>Call Chain = robstride_init &rArr; osDelay &rArr; vTaskDelay &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[12a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
@@ -2175,7 +2177,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
-<P><STRONG><a name="[150]"></a>robstride_keepalive</STRONG> (Thumb, 272 bytes, Stack size 56 bytes, robstride.o(.text.robstride_keepalive))
+<P><STRONG><a name="[151]"></a>robstride_keepalive</STRONG> (Thumb, 272 bytes, Stack size 56 bytes, robstride.o(.text.robstride_keepalive))
 <BR><BR>[Stack]<UL><LI>Max Depth = 84<LI>Call Chain = robstride_keepalive &rArr; HAL_FDCAN_AddMessageToTxFifoQ
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FDCAN_AddMessageToTxFifoQ
@@ -2183,7 +2185,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
-<P><STRONG><a name="[155]"></a>robstride_restart</STRONG> (Thumb, 126 bytes, Stack size 80 bytes, robstride.o(.text.robstride_restart))
+<P><STRONG><a name="[156]"></a>robstride_restart</STRONG> (Thumb, 126 bytes, Stack size 80 bytes, robstride.o(.text.robstride_restart))
 <BR><BR>[Stack]<UL><LI>Max Depth = 108<LI>Call Chain = robstride_restart &rArr; HAL_FDCAN_AddMessageToTxFifoQ
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_FDCAN_AddMessageToTxFifoQ
@@ -2191,18 +2193,18 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
-<P><STRONG><a name="[14d]"></a>score_preset_kfs_height</STRONG> (Thumb, 14 bytes, Stack size 0 bytes, score_task.o(.text.score_preset_kfs_height))
+<P><STRONG><a name="[14f]"></a>score_preset_kfs_height</STRONG> (Thumb, 14 bytes, Stack size 0 bytes, score_task.o(.text.score_preset_kfs_height))
 <BR><BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
 
-<P><STRONG><a name="[151]"></a>score_update</STRONG> (Thumb, 786 bytes, Stack size 8 bytes, score_task.o(.text.score_update))
+<P><STRONG><a name="[152]"></a>score_update</STRONG> (Thumb, 1014 bytes, Stack size 8 bytes, score_task.o(.text.score_update))
 <BR><BR>[Stack]<UL><LI>Max Depth = 56<LI>Call Chain = score_update &rArr; arm_sm_update &rArr; relay_pickup_kfs &rArr; osKernelGetTickCount &rArr; xTaskGetTickCountFromISR
 </UL>
 <BR>[Calls]<UL><LI><a href="#[13a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;arm_sm_update
 <LI><a href="#[181]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_clear_new_cmd
 <LI><a href="#[17f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_has_new_cmd
 <LI><a href="#[180]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rc_get_cmd
-<LI><a href="#[156]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_vacuum_on
+<LI><a href="#[13e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;esc_update
 </UL>
 <BR>[Called By]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;leg_task
 </UL>
@@ -2739,17 +2741,19 @@ Local Symbols
 <BR>[Called By]<UL><LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UARTEx_RxEventCallback
 </UL>
 
-<P><STRONG><a name="[13a]"></a>arm_sm_update</STRONG> (Thumb, 836 bytes, Stack size 24 bytes, score_task.o(.text.arm_sm_update))
+<P><STRONG><a name="[13a]"></a>arm_sm_update</STRONG> (Thumb, 1152 bytes, Stack size 24 bytes, score_task.o(.text.arm_sm_update))
 <BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = arm_sm_update &rArr; relay_pickup_kfs &rArr; osKernelGetTickCount &rArr; xTaskGetTickCountFromISR
 </UL>
 <BR>[Calls]<UL><LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osKernelGetTickCount
-<LI><a href="#[13e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_cylinder_retract
-<LI><a href="#[13f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_cylinder_extend
-<LI><a href="#[13c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_arrived
+<LI><a href="#[141]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_cylinder_retract
+<LI><a href="#[13c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_cylinder_extend
+<LI><a href="#[140]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;lift_arrived
 <LI><a href="#[13b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_pickup_kfs
-<LI><a href="#[13d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;esc_update
+<LI><a href="#[13d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_vacuum_on
+<LI><a href="#[13f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;relay_vacuum_off
+<LI><a href="#[13e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;esc_update
 </UL>
-<BR>[Called By]<UL><LI><a href="#[151]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;score_update
+<BR>[Called By]<UL><LI><a href="#[152]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;score_update
 </UL>
 <P>
 <H3>

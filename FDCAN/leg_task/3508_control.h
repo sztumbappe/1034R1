@@ -57,7 +57,7 @@ typedef struct {
 #if MATCH_MODE == MATCH_MODE_PRELIM3
 #define LIFT_BLUE_POS1      (-110926)        /* 高200 崇武探幽预选赛3偏上(防打到存杆) */
 #else
-#define LIFT_BLUE_POS1      (-150300)        /* 高200 正常 */
+#define LIFT_BLUE_POS1      (-150000)        /* 高200 正常 */
 #endif
 #define LIFT_BLUE_POS2      (430772)       /* 高400 */
 #define LIFT_BLUE_POS3      (1032170)      /* 高600 */

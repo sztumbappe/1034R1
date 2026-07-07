@@ -34,6 +34,8 @@ typedef enum {
     RC_CMD_R2READY,         /* R2预备姿态: RCR2READYEND */
     RC_CMD_ATREADY,         /* R1进攻姿态: RCATREADYEND */
     RC_CMD_TRIGGER,         /* 触发1号臂放料准备: RCTRIGGEREND */
+    RC_CMD_LAUTO,           /* 左Auto: RCLAUTO00END/01END */
+    RC_CMD_RAUTO,           /* 右Auto: RCRAUTO00END/01END */
 } rc_cmd_type_t;
 
 /* ======================== 指令数据结构 ======================== */

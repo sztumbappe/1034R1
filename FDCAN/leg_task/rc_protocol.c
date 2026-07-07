@@ -514,6 +514,16 @@ static void rc_parse_cmd(const char *buf, uint8_t len)
     else if (match_prefix(buf, len, "TRIGGER") >= 0) {
         cmd.type = RC_CMD_TRIGGER;
     }
+    /* ---- 左Auto: LAUTO00 / LAUTO01 ---- */
+    else if (match_prefix(buf, len, "LAUTO") >= 0) {
+        cmd.type = RC_CMD_LAUTO;
+        cmd.param1 = parse_uint16(buf + 5, len - 5);
+    }
+    /* ---- 右Auto: RAUTO00 / RAUTO01 ---- */
+    else if (match_prefix(buf, len, "RAUTO") >= 0) {
+        cmd.type = RC_CMD_RAUTO;
+        cmd.param1 = parse_uint16(buf + 5, len - 5);
+    }
     /* 更新最新指令 (仅合法指令) */
     if (cmd.type != RC_CMD_NONE) {
         latest_cmd = cmd;

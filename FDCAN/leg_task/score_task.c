@@ -36,12 +36,11 @@ typedef enum {
     SCORE_ABSORB_WAIT_BOTH,    /* 取料: 降100 + 灵足展开, 等两路到位 */
     SCORE_ABSORB_DO,           /* 取料: 执行吸取 */
     SCORE_SWITCH_OPEN,         /* 放料: 开阀300ms后收气缸 */
-    /* ---- 预选赛 ---- */
-    PRELIM_LRECALL_CYL_OUT,    /* 左收①: 气缸伸出300ms */
-    PRELIM_LRECALL_RELEASE,    /* 左收②: 开阀释放300ms */
-    PRELIM_LRECALL_CYL_IN,     /* 左收③: 气缸缩回+100ms */
-    PRELIM_LRECALL_RIGHT_PREP, /* 左收④: 对侧臂转±90°+关阀吸气+伸气缸 */
-    PRELIM_ROUTLAY_CYL_IN,     /* 右伸: 先收气缸→到位后伸出 */
+    /* ---- 预选赛自动 ---- */
+    PRELIM_AUTO_CYL_EXTEND,    /* LAuto01/RAuto01 ①: 弹气缸+吸,等300ms */
+    PRELIM_AUTO_CYL_RETRACT,   /* LAuto01/RAuto01 ②: 收气缸,等100ms */
+    PRELIM_AUTO_RAISE,         /* LAuto01/RAuto01 ③: 抬升到600,等到位→前伸 */
+    PRELIM_AUTO_RELEASE,       /* Switch: 弹300ms→放500ms→收 */
 } score_state_t;
 
 /* ======================== 内部变量 ======================== */
@@ -260,75 +259,66 @@ static void arm_sm_update(uint8_t idx)
         break;
 
 #if MATCH_MODE == MATCH_MODE_PRELIM || MATCH_MODE == MATCH_MODE_BLUE
-    /* ========== 预选赛左收状态机 (红方arm0 / 蓝方arm1) ========== */
+    /* ========== 预选赛自动指令 (LAuto01/RAuto01) ========== */
 
-    case PRELIM_LRECALL_CYL_OUT:
-        /* ① 气缸伸出300ms */
+    case PRELIM_AUTO_CYL_EXTEND:
+        /* ① 启泵+20ms guard → 弹气缸+吸气 → 等稳定 */
         if (enter_tick[idx] == 0) {
             enter_tick[idx] = now;
-            relay_cylinder_extend(idx + 1);
+            pump_was_idle[idx] = !motor_run_flag;
+            motor_run_flag = 1;
+            esc_update();
         }
-        if (now - enter_tick[idx] >= 300) {
-            state[idx] = PRELIM_LRECALL_RELEASE;
+        if (now - enter_tick[idx] < 20) break;
+        relay_cylinder_extend(idx + 1);
+        relay_vacuum_off(idx + 1);
+        if (now - enter_tick[idx] >= 320 + (pump_was_idle[idx] ? 300 : 0)) {
+            state[idx] = PRELIM_AUTO_CYL_RETRACT;
             enter_tick[idx] = 0;
         }
         break;
 
-    case PRELIM_LRECALL_RELEASE:
-        /* ② 开电磁阀释放500ms */
-        if (enter_tick[idx] == 0) {
-            enter_tick[idx] = now;
-            relay_vacuum_on(idx + 1);
-        }
-        if (now - enter_tick[idx] >= 500) {
-            state[idx] = PRELIM_LRECALL_CYL_IN;
-            enter_tick[idx] = 0;
-        }
-        break;
-
-    case PRELIM_LRECALL_CYL_IN:
-        /* ③ 气缸缩回, 等100ms */
+    case PRELIM_AUTO_CYL_RETRACT:
+        /* ② 收气缸, 等100ms */
         if (enter_tick[idx] == 0) {
             enter_tick[idx] = now;
             relay_cylinder_retract(idx + 1);
         }
         if (now - enter_tick[idx] >= 100) {
-            state[idx] = PRELIM_LRECALL_RIGHT_PREP;
+            state[idx] = PRELIM_AUTO_RAISE;
             enter_tick[idx] = 0;
         }
         break;
 
-    case PRELIM_LRECALL_RIGHT_PREP:
-        /* ④ 对侧臂转±90° + 关阀吸气 → IDLE */
-#if MATCH_MODE == MATCH_MODE_PRELIM
-        /* 红方: 右臂(arm1) → -90°(-1.57f) + 吸气 */
-        prelim_prep_flag[1] = 1;
-        prelim_prep_angle[1] = -1.57f;
-        relay_vacuum_off(2);
-#elif MATCH_MODE == MATCH_MODE_BLUE
-        /* 蓝方: 左臂(arm0) → +90°(+1.57f) + 吸气 */
-        prelim_prep_flag[0] = 1;
-        prelim_prep_angle[0] = 1.57f;
-        relay_vacuum_off(1);
-#endif
-        state[idx] = SCORE_IDLE;
-        break;
-
-    case PRELIM_ROUTLAY_CYL_IN:
-        /* 设目标高度抬升200ms → 收气缸 → 衔接正常放料 */
+    case PRELIM_AUTO_RAISE:
+        /* ③ 抬升到600, 等到位后前伸 → IDLE */
+        if (idx == 0) {
+            target_red = 4;
+        } else {
+            target_blue = 4;
+        }
         if (enter_tick[idx] == 0) {
             enter_tick[idx] = now;
-            if (idx == 0) {
-                target_red = 4;
-            } else {
-                target_blue = 4;
-            }
         }
-        if (now - enter_tick[idx] >= 200) {
-            relay_cylinder_retract(idx + 1);
-            state[idx] = SCORE_OUTLAY_WAIT_HEIGHT;
-            enter_tick[idx] = 0;
+        if (now - enter_tick[idx] < 20) break;
+        if (lift_arrived(idx) || (now - enter_tick[idx] >= 2000)) {
+            prelim_prep_flag[idx] = 0;  /* 清除±90°预备, 灵足切回正常控制 */
+            arm_close[idx] = 0;          /* 前伸 → 主循环灵足→前伸角度 */
+            state[idx] = SCORE_IDLE;
         }
+        break;
+
+    case PRELIM_AUTO_RELEASE:
+        /* Switch: 弹300ms → 放500ms → 收100ms */
+        if (enter_tick[idx] == 0) {
+            enter_tick[idx] = now;
+            relay_cylinder_extend(idx + 1);
+        }
+        if (now - enter_tick[idx] < 300) break;
+        relay_vacuum_on(idx + 1);
+        if (now - enter_tick[idx] < 800) break;
+        relay_cylinder_retract(idx + 1);
+        state[idx] = SCORE_IDLE;
         break;
 #endif /* MATCH_MODE == MATCH_MODE_PRELIM || MATCH_MODE == MATCH_MODE_BLUE */
 
@@ -369,6 +359,8 @@ static uint8_t cmd_triggers_gimbal(rc_cmd_type_t type)
     case RC_CMD_ROUTLAY:
     case RC_CMD_TRIGGER:
     case RC_CMD_KFS:
+    case RC_CMD_LAUTO:
+    case RC_CMD_RAUTO:
         return 1;
     default:
         return 0;
@@ -385,41 +377,6 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
 
     switch (cmd->type) {
 
-    // /* ---- 半自动: 取料/存料 ---- */        //先取右臂后取左
-    // case RC_CMD_ATAKE:
-    //     if (cmd->param1 == 0) {
-    //         /* ATAKE00: 右臂取料 → 先降到KFS高度 */
-    //         state[1] = SCORE_PICKUP_DESCEND;
-    //         enter_tick[1] = 0;
-    //     } else {
-    //         /* ATAKE01: 右臂存料 → 先升到600再收回 */
-    //         state[1] = SCORE_STORE_RAISE;
-    //         enter_tick[1] = 0;
-    //     }
-    //     break;
-
-    // case RC_CMD_BTAKE:
-    //     if (cmd->param1 == 0) {
-    //         /* BTAKE00: 左臂取料 → 先降到KFS高度 */
-    //         state[0] = SCORE_PICKUP_DESCEND;
-    //         enter_tick[0] = 0;
-    //     } else {
-    //         /* BTAKE01: 左臂存料 → 先升到600再收回 */
-    //         state[0] = SCORE_STORE_RAISE;
-    //         enter_tick[0] = 0;
-    //     }
-    //     break;
-
-    // /* ---- 开场定位 ---- */
-    // case RC_CMD_KFS:
-    //     arm_init = 1;  /* 收到KFS指令时触发启动 */
-    //     if (cmd->param1 <= 9) {·
-    //         kfs_height_red = (float)protocol_to_height[cmd->param2];
-    //     }
-    //     if (cmd->param2 <= 9) {
-    //         kfs_height_blue = (float)protocol_to_height[cmd->param1];
-    //     }
-    //     break;
         /* ---- 半自动: 取料/存料 ---- */
     case RC_CMD_ATAKE:
         if (cmd->param1 == 0) {
@@ -505,16 +462,26 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
 
     /* ---- 放料切换 ---- */
     case RC_CMD_RSWITCH:
-        /* 右臂开电磁阀 → 300ms后收气缸 */
+#if MATCH_MODE == MATCH_MODE_PRELIM || MATCH_MODE == MATCH_MODE_BLUE
+        /* 新流程: 弹气缸→放KFS→收气缸 */
+        state[1] = PRELIM_AUTO_RELEASE;
+#else
+        /* 右臂开电磁阀 → 500ms后收气缸 */
         relay_vacuum_on(2);
         state[1] = SCORE_SWITCH_OPEN;
+#endif
         enter_tick[1] = 0;
         break;
 
     case RC_CMD_LSWITCH:
-        /* 左臂开电磁阀 → 300ms后收气缸 */
+#if MATCH_MODE == MATCH_MODE_PRELIM || MATCH_MODE == MATCH_MODE_BLUE
+        /* 新流程: 弹气缸→放KFS→收气缸 */
+        state[0] = PRELIM_AUTO_RELEASE;
+#else
+        /* 左臂开电磁阀 → 500ms后收气缸 */
         relay_vacuum_on(1);
         state[0] = SCORE_SWITCH_OPEN;
+#endif
         enter_tick[0] = 0;
         break;
 
@@ -540,54 +507,16 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
         break;
 
     case RC_CMD_LRECALL:
-#if MATCH_MODE == MATCH_MODE_PRELIM
-        /* 红方左收: 4步状态机 (气缸出→释放→气缸缩→右臂预备) */
-        if (state[0] == SCORE_IDLE) {  /* 防重复触发 */
-            arm_init = 1;
-            state[0] = PRELIM_LRECALL_CYL_OUT;
-            enter_tick[0] = 0;
-        }
-#elif MATCH_MODE == MATCH_MODE_BLUE
-        /* 蓝方左收: 镜像红方左收, 运行在右臂(arm1) */
-        if (state[1] == SCORE_IDLE) {  /* 防重复触发 */
-            arm_init = 1;
-            state[1] = PRELIM_LRECALL_CYL_OUT;
-            enter_tick[1] = 0;
-        }
-#else
-        /* 正常/调试/PRELIM3: 标准收回 */
+        /* 升最高→后收 (左臂) */
         state[0] = SCORE_STORE_RAISE;
         enter_tick[0] = 0;
-#endif
         break;
 
     /* ---- 右臂收回 (等价BTAKE01) ---- */
     case RC_CMD_RRECALL:
-#if MATCH_MODE == MATCH_MODE_PRELIM
-        /* 红方右收: 双灵足前伸 + 左保KFS + 右降到底 */
-        if (state[1] == SCORE_IDLE) {  /* 防重复触发 */
-            arm_init = 1;
-            arm_close[0] = 0;
-            arm_close[1] = 0;
-            target_red = kfs_height_red;
-            target_blue = 1;
-            state[1] = SCORE_IDLE;
-        }
-#elif MATCH_MODE == MATCH_MODE_BLUE
-        /* 蓝方右收: 镜像红方右收 (右保KFS + 左降到底) */
-        if (state[0] == SCORE_IDLE) {  /* 防重复触发 */
-            arm_init = 1;
-            arm_close[0] = 0;
-            arm_close[1] = 0;
-            target_blue = kfs_height_blue;
-            target_red = 1;
-            state[0] = SCORE_IDLE;
-        }
-#else
-        /* 正常/调试/PRELIM3: 标准收回 */
+        /* 升最高→后收 (右臂) */
         state[1] = SCORE_STORE_RAISE;
         enter_tick[1] = 0;
-#endif
         break;
 
     /* ---- 左臂放料准备 ---- */
@@ -596,12 +525,7 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
         prelim_prep_flag[0] = 0;  /* 清除预备标志, 让 arm_close 接管 */
         prelim_prep_flag[1] = 0;
 #endif
-#if MATCH_MODE == MATCH_MODE_BLUE
-        /* 蓝方左伸: 先收气缸 → 到位后伸出 */
-        state[0] = PRELIM_ROUTLAY_CYL_IN;
-#else
         state[0] = SCORE_OUTLAY_WAIT_HEIGHT;
-#endif
         enter_tick[0] = 0;
         break;
 
@@ -611,12 +535,7 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
         prelim_prep_flag[0] = 0;  /* 清除预备标志, 让 arm_close 接管 */
         prelim_prep_flag[1] = 0;
 #endif
-#if MATCH_MODE == MATCH_MODE_PRELIM
-        /* 红方右伸: 先收气缸 → 到位后伸出 */
-        state[1] = PRELIM_ROUTLAY_CYL_IN;
-#else
         state[1] = SCORE_OUTLAY_WAIT_HEIGHT;
-#endif
         enter_tick[1] = 0;
         break;
 
@@ -640,6 +559,45 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
     case RC_CMD_TRIGGER:
         target_red = 3;    /* 高400 */
         arm_close[0] = 1;  /* 灵足收回 */
+        break;
+
+    /* ---- 预选赛自动指令 ---- */
+    case RC_CMD_LAUTO:
+        arm_init = 1;
+        if (cmd->param1 == 0) {
+            /* LAUTO00: 左臂前伸 + 右臂到最右侧底(±90°, H100) */
+            arm_close[0] = 0;
+#if MATCH_MODE == MATCH_MODE_PRELIM || MATCH_MODE == MATCH_MODE_BLUE
+            prelim_prep_flag[1] = 1;
+            prelim_prep_angle[1] = -1.57f;
+#endif
+            target_blue = 1;
+        } else {
+            /* LAUTO01: 右臂取KFS → 抬升 → 前伸 */
+            motor_run_flag = 1;
+            esc_update();
+            state[1] = PRELIM_AUTO_CYL_EXTEND;
+            enter_tick[1] = 0;
+        }
+        break;
+
+    case RC_CMD_RAUTO:
+        arm_init = 1;
+        if (cmd->param1 == 0) {
+            /* RAUTO00: 右臂前伸 + 左臂到最左侧底(±90°, H100) */
+            arm_close[1] = 0;
+#if MATCH_MODE == MATCH_MODE_PRELIM || MATCH_MODE == MATCH_MODE_BLUE
+            prelim_prep_flag[0] = 1;
+            prelim_prep_angle[0] = 1.57f;
+#endif
+            target_red = 1;
+        } else {
+            /* RAUTO01: 左臂取KFS → 抬升 → 前伸 */
+            motor_run_flag = 1;
+            esc_update();
+            state[0] = PRELIM_AUTO_CYL_EXTEND;
+            enter_tick[0] = 0;
+        }
         break;
 
     default:
