@@ -27,6 +27,7 @@ typedef enum {
     SCORE_PICKUP_DESCEND,      /* 取料: 降到KFS高度 */
     SCORE_PICKUP_STEP1,        /* 取料: relay_pickup_kfs (含200ms阻塞) */
     SCORE_STORE_RAISE,         /* 存料: 升到600 */
+    SCORE_STORE_RAISE_ONLY,   /* 存料(不收): 右臂升600 → IDLE */
     SCORE_STORE_RETRACT,       /* 存料: 灵足收到后面 */
     SCORE_OUTLAY_WAIT_HEIGHT,  /* 放料: 设target=4(高600) + 灵足展开 */
     SCORE_OUTLAY_WAIT_LEG,     /* 放料: 等灵足展开到位 */
@@ -184,6 +185,24 @@ static void arm_sm_update(uint8_t idx)
         }
         break;
 
+    case SCORE_STORE_RAISE_ONLY:
+        /* 升到600 → IDLE (不收回灵足) */
+        if (idx == 0) {
+            target_red = 4;
+        } else {
+            target_blue = 4;
+        }
+        if (enter_tick[idx] == 0) {
+            enter_tick[idx] = now;
+        }
+        if (now - enter_tick[idx] < 20) {
+            break;
+        }
+        if (lift_arrived(idx) || (now - enter_tick[idx] >= 2000)) {
+            state[idx] = SCORE_IDLE;
+        }
+        break;
+
     case SCORE_STORE_RETRACT:
         /* 到600后灵足收到后面 */
         arm_close[idx] = 1;
@@ -240,7 +259,7 @@ static void arm_sm_update(uint8_t idx)
         }
         break;
 
-#if MATCH_MODE != MATCH_MODE_NORMAL
+#if MATCH_MODE == MATCH_MODE_PRELIM || MATCH_MODE == MATCH_MODE_BLUE
     /* ========== 预选赛左收状态机 (红方arm0 / 蓝方arm1) ========== */
 
     case PRELIM_LRECALL_CYL_OUT:
@@ -311,7 +330,7 @@ static void arm_sm_update(uint8_t idx)
             enter_tick[idx] = 0;
         }
         break;
-#endif /* MATCH_MODE != MATCH_MODE_NORMAL */
+#endif /* MATCH_MODE == MATCH_MODE_PRELIM || MATCH_MODE == MATCH_MODE_BLUE */
 
     default:
         state[idx] = SCORE_IDLE;
@@ -420,8 +439,12 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
             state[1] = SCORE_PICKUP_DESCEND;
             enter_tick[1] = 0;
         } else {
-            /* BTAKE01: 右臂存料 → 先升到600再收回 */
+            /* BTAKE01: 右臂存料 */
+#if MATCH_MODE == MATCH_MODE_PRELIM3
+            state[1] = SCORE_STORE_RAISE_ONLY;
+#else
             state[1] = SCORE_STORE_RAISE;
+#endif
             enter_tick[1] = 0;
         }
         break;
@@ -517,10 +540,7 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
         break;
 
     case RC_CMD_LRECALL:
-#if MATCH_MODE == MATCH_MODE_NORMAL
-        state[0] = SCORE_STORE_RAISE;
-        enter_tick[0] = 0;
-#elif MATCH_MODE == MATCH_MODE_PRELIM
+#if MATCH_MODE == MATCH_MODE_PRELIM
         /* 红方左收: 4步状态机 (气缸出→释放→气缸缩→右臂预备) */
         if (state[0] == SCORE_IDLE) {  /* 防重复触发 */
             arm_init = 1;
@@ -534,15 +554,16 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
             state[1] = PRELIM_LRECALL_CYL_OUT;
             enter_tick[1] = 0;
         }
+#else
+        /* 正常/调试/PRELIM3: 标准收回 */
+        state[0] = SCORE_STORE_RAISE;
+        enter_tick[0] = 0;
 #endif
         break;
 
     /* ---- 右臂收回 (等价BTAKE01) ---- */
     case RC_CMD_RRECALL:
-#if MATCH_MODE == MATCH_MODE_NORMAL
-        state[1] = SCORE_STORE_RAISE;
-        enter_tick[1] = 0;
-#elif MATCH_MODE == MATCH_MODE_PRELIM
+#if MATCH_MODE == MATCH_MODE_PRELIM
         /* 红方右收: 双灵足前伸 + 左保KFS + 右降到底 */
         if (state[1] == SCORE_IDLE) {  /* 防重复触发 */
             arm_init = 1;
@@ -562,12 +583,16 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
             target_red = 1;
             state[0] = SCORE_IDLE;
         }
+#else
+        /* 正常/调试/PRELIM3: 标准收回 */
+        state[1] = SCORE_STORE_RAISE;
+        enter_tick[1] = 0;
 #endif
         break;
 
     /* ---- 左臂放料准备 ---- */
     case RC_CMD_LOUTLAY:
-#if MATCH_MODE != MATCH_MODE_NORMAL
+#if MATCH_MODE == MATCH_MODE_PRELIM || MATCH_MODE == MATCH_MODE_BLUE
         prelim_prep_flag[0] = 0;  /* 清除预备标志, 让 arm_close 接管 */
         prelim_prep_flag[1] = 0;
 #endif
@@ -582,7 +607,7 @@ static void dispatch_cmd(const rc_cmd_t *cmd)
 
     /* ---- 右臂放料准备 ---- */
     case RC_CMD_ROUTLAY:
-#if MATCH_MODE != MATCH_MODE_NORMAL
+#if MATCH_MODE == MATCH_MODE_PRELIM || MATCH_MODE == MATCH_MODE_BLUE
         prelim_prep_flag[0] = 0;  /* 清除预备标志, 让 arm_close 接管 */
         prelim_prep_flag[1] = 0;
 #endif

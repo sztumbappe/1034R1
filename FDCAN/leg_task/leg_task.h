@@ -6,8 +6,10 @@
 /* ======================== 比赛模式宏 ======================== */
 #define MATCH_MODE_NORMAL  0   /* 正常模式 */
 #define MATCH_MODE_PRELIM  1   /* 预选赛2红方 */
+#define MATCH_MODE_PRELIM3  2   /* 预选赛3: 右臂存料只抬升不收灵足 */
+#define MATCH_MODE_DEBUG    3   /* 正式赛调试模式: 上电双臂预装KFS */
 #define MATCH_MODE_BLUE   -1   /* 预选赛2蓝区(左右互换) */
-#define MATCH_MODE  MATCH_MODE_NORMAL /* 发布时改为 1 或 -1 */
+#define MATCH_MODE  MATCH_MODE_DEBUG /* 发布时改为 1 / -1 / 2 / 3 */
 
 /* ======================== 任务函数声明 ======================== */
 
@@ -24,7 +26,7 @@ extern volatile float arm_init;      /* 启动信号: 设为1触发双臂动作 
 /* 声明在 ROBSTRIDE.h: extern volatile float arm_close[2] */
 
 /* ======================== 预选赛灵足预备标志 ======================== */
-#if MATCH_MODE != MATCH_MODE_NORMAL
+#if MATCH_MODE == MATCH_MODE_PRELIM || MATCH_MODE == MATCH_MODE_BLUE
 extern uint8_t prelim_prep_flag[2];   /* [0]=左臂 [1]=右臂: 1=强制预备角度 */
 extern float   prelim_prep_angle[2];  /* [0]=左臂 [1]=右臂: 预备目标角度(rad) */
 #endif
