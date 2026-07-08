@@ -50,3 +50,21 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Keil MDK-ARM build artifacts
+*.axf
+*.crf
+*.htm
+*.dep
+*.iex
+*.lnp
+*.lst
+*.uvguix.*
+*.uvoptx
+*.Bak
+*_sct.Bak
+DebugConfig/
+EventRecorderStub.scvd
+
+# Keil MDK-ARM 输出目录（含 .axf/.crf/.htm 等编译产物）
+FDCAN/MDK-ARM/FDCAN/
