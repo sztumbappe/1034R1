@@ -262,7 +262,7 @@ static void arm_sm_update(uint8_t idx)
     /* ========== 预选赛自动指令 (LAuto01/RAuto01) ========== */
 
     case PRELIM_AUTO_CYL_EXTEND:
-        /* ① 启泵+20ms guard → 弹气缸+吸气 → 等稳定 */
+        /* ① 启泵+20ms guard → 弹气缸+吸气500ms → 等稳定 */
         if (enter_tick[idx] == 0) {
             enter_tick[idx] = now;
             pump_was_idle[idx] = !motor_run_flag;
@@ -272,7 +272,7 @@ static void arm_sm_update(uint8_t idx)
         if (now - enter_tick[idx] < 20) break;
         relay_cylinder_extend(idx + 1);
         relay_vacuum_off(idx + 1);
-        if (now - enter_tick[idx] >= 320 + (pump_was_idle[idx] ? 300 : 0)) {
+        if (now - enter_tick[idx] >= 520 + (pump_was_idle[idx] ? 300 : 0)) {
             state[idx] = PRELIM_AUTO_CYL_RETRACT;
             enter_tick[idx] = 0;
         }
@@ -309,14 +309,14 @@ static void arm_sm_update(uint8_t idx)
         break;
 
     case PRELIM_AUTO_RELEASE:
-        /* Switch: 弹300ms → 放500ms → 收100ms */
+        /* Switch: 弹300ms → 放700ms → 收100ms */
         if (enter_tick[idx] == 0) {
             enter_tick[idx] = now;
             relay_cylinder_extend(idx + 1);
         }
         if (now - enter_tick[idx] < 300) break;
         relay_vacuum_on(idx + 1);
-        if (now - enter_tick[idx] < 800) break;
+        if (now - enter_tick[idx] < 1000) break;
         relay_cylinder_retract(idx + 1);
         state[idx] = SCORE_IDLE;
         break;
