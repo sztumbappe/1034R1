@@ -268,10 +268,10 @@ static void arm_sm_update(uint8_t idx)
             pump_was_idle[idx] = !motor_run_flag;
             motor_run_flag = 1;
             esc_update();
+            relay_vacuum_off(idx + 1);   // 先关阀,吸附
         }
         if (now - enter_tick[idx] < 20) break;
         relay_cylinder_extend(idx + 1);
-        relay_vacuum_off(idx + 1);
         if (now - enter_tick[idx] >= 520 + (pump_was_idle[idx] ? 300 : 0)) {
             state[idx] = PRELIM_AUTO_CYL_RETRACT;
             enter_tick[idx] = 0;

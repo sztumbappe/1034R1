@@ -10,7 +10,8 @@
 #include "stdint.h"
 
 /* 电机参数定义 */
-#define AIMDIC        4562067.0f    //3508电机转29圈
+// #define AIMDIC        4562067.0f    //3508电机转29圈
+#define AIMDIC        3618191.0f   //3508电机转23圈
 //#define AIMDIC          3146253.0f    //3508电机转20圈   
 #define AimVar          1000
 
