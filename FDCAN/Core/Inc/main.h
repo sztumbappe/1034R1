@@ -27,7 +27,7 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32h7xx_hal.h"                                                       
+#include "stm32h7xx_hal.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -65,7 +65,7 @@ void Error_Handler(void);
 #define MATCH_MODE_PRELIM3 2   /* 崇武探幽预选赛3: 右臂存料只抬升不收灵足 */
 #define MATCH_MODE_DEBUG   3   /* 调试模式: 上电双臂预装KFS */
 #define MATCH_MODE_BLUE   -1   /* 九宫藏宝预选赛蓝方 (上电右臂预装KFS) */
-#define MATCH_MODE  MATCH_MODE_PRELIM3
+#define MATCH_MODE  MATCH_MODE_BLUE 
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

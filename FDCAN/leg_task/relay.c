@@ -112,7 +112,7 @@ void relay_pickup_poll(void)
         break;
 
     case RELAY_PICKUP_PUMP_WAIT:
-        if (osKernelGetTickCount() - pickup_tick >= 300) {
+        if (osKernelGetTickCount() - pickup_tick >= 200) {
             /* 气泵已稳定 → 开始吸附 */
             relay_vacuum_off(pickup_arm);
             relay_cylinder_extend(pickup_arm);
