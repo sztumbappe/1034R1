@@ -225,8 +225,8 @@ void SetSpeed(motor_control *ptr, float speed)
 
 #define STALL_PID_THRESHOLD   3000.0f   /* PID输出超过此值认为在"努力驱动" */
 #define STALL_SPEED_THRESHOLD  100.0f   /* 实际转速低于此值认为"没动" (rpm) */
-#define STALL_TIMEOUT_TICKS      500    /* 持续500ms判定堵转 */
-#define STALL_SAFE_CURRENT     5000     /* 堵转时限流为5000 (正常最大15000) */
+#define STALL_TIMEOUT_TICKS      300    /* 持续300ms判定堵转 */
+#define STALL_SAFE_CURRENT     1000     /* 堵转时限流为1000 (正常最大15000) */
 
 static struct {
     uint32_t tick;      /* 开始检测的时刻 */
